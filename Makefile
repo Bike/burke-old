@@ -11,7 +11,7 @@ EXECUTABLE = lisp
 all: boehm
 
 boehm: $(IOBJECTS) alloc_boehm.o layout_malloc.o
-	$(CC) $(LDFLAGS) -lgc $(IOBJECTS) alloc_boehm.o layout_malloc.o -o $(EXECUTABLE)
+	$(CC) $(LDFLAGS) $(IOBJECTS) alloc_boehm.o layout_malloc.o -lgc -o $(EXECUTABLE)
 
 malloc: $(IOBJECTS) alloc_malloc.o layout_malloc.o
 	$(CC) $(LDFLAGS) $(IOBJECTS) alloc_malloc.o layout_malloc.o -o $(EXECUTABLE)
