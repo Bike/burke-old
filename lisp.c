@@ -23,7 +23,7 @@ int truth(lispobj *val) {
   assert_type(val, LT_SINGLETON);
   if (val == sharp_t) return 1;
   if (val == sharp_f) return 0;
-  error("truth of a non boolean");
+  error("truth of a non boolean\n");
   return 0; // this is a bad idea
 }
 
@@ -75,7 +75,7 @@ lispobj* eval(lispobj *obj, lispobj *env) {
   lispobj* user_eval = vref(user_evals, objtype);
 
   if (undefinedp(user_eval))
-    // return error("No user evaluator for object type %d", objtype);
+    // return error("No user evaluator for object type %d\n", objtype);
     return obj; // self-evaluate by default - bad idea maybe?
   else
     return combine(user_eval, list(2, obj, env), empty_environment);
@@ -109,7 +109,7 @@ void define(lispobj *name, lispobj *value, lispobj *env) {
   lispobj* user_define = vref(user_defines, envtype);
 
   if (undefinedp(user_define))
-    error("No user define for env type %d", envtype);
+    error("No user define for env type %d\n", envtype);
   else
     combine(user_define, list(3, name, value, env), empty_environment);
 }

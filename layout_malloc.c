@@ -108,7 +108,7 @@ lispobj* vref(lispobj* vector, fixnum index) {
 void set_vref(lispobj *vector, fixnum index, lispobj *value) {
   assert_type(vector, LT_VECTOR);
   if ((index > vlength(vector)) || (index < 0))
-    error("out of bounds");
+    error("out of bounds\n");
   else
     (vector->vector.data)[index] = value;
 }

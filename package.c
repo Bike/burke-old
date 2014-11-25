@@ -14,7 +14,7 @@ lispobj* intern(const char* name) {
   lispobj *symbol;
 
   if (package_fillptr > PACKAGE_MAX)
-    return error("out of symbol space!");
+    return error("out of symbol space!\n");
 
   symbol = make_symbol(name, strlen(name));
   set_vref(package, package_fillptr++, symbol);

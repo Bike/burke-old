@@ -55,7 +55,7 @@ lispobj* make_nenv(lispobj* parent, size_t size) {
   ret->length = size;
   ret->fillptr = 0;
   if (!(ret->names = GC_MALLOC(size*sizeof(lispobj*))))
-    return error("OOM");
+    return error("OOM\n");
   if (!(ret->values = GC_MALLOC(size*sizeof(lispobj*))))
     return error("OOM\n");
   return (lispobj*)ret;
