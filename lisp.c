@@ -20,11 +20,12 @@ lispobj *ground_environment = NULL, *empty_environment = NULL;
 /* MORE COMPLICATED LISPY/MISC FUNCTIONS IN C */
 
 int truth(lispobj *val) {
-  assert_type(val, LT_SINGLETON);
+  assert(val);
   if (val == sharp_t) return 1;
   if (val == sharp_f) return 0;
-  error("truth of a non boolean\n");
-  return 0; // this is a bad idea
+  // If it isn't a boolean, prompt the error handler for a boolean.
+  // Sure hope the compiler has tail calls.
+  return truth(error("truth of a non-boolean\n"));
 }
 
 lispobj* list(int count, ...) {
