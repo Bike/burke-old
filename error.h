@@ -5,13 +5,21 @@
 
 #include <stdarg.h>
 #include <assert.h>
-#include "types.h" // lispobj_typep
+#include "types.h" // lispobj_typep, lispobj
 
+// should take a lispobj in the future
+typedef lispobj*(*error_handler)(const char* format, ...);
+
+#ifndef _Thread_local
+// some impls support threads but not C11, because they suck.
 #ifdef __GNUC__
-void error(const char*, ...) __attribute__ ((format(printf,1,2), noreturn));
+#define _Thread_local __thread
 #else
-void error(const char*, ...);
-#endif /* printf attrs */
+#define _Thread_local
+#endif
+#endif
+
+extern _Thread_local error_handler error __attribute__ ((format(printf,1,2)));
 
 #define assert_type(LISPOBJ, TYPE)		\
   do {						\

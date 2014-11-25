@@ -8,7 +8,7 @@ inline lispobj* make_pair(lispobj *car, lispobj *cdr) {
 
   do {
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
-    if (res != MPS_RES_OK) error("OOM\n");
+    if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
     obj->pair.type = LT_PAIR;
     obj->pair.car = car;
@@ -26,7 +26,7 @@ inline lispobj* make_applicative(lispobj *underlying) {
 
   do {
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
-    if (res != MPS_RES_OK) error("OOM\n");
+    if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
     obj->applicative.type = LT_APPLICATIVE;
     obj->applicative.underlying = underlying;
@@ -43,7 +43,7 @@ inline lispobj* make_fexpr(lispobj *arg, lispobj *earg, lispobj *env, lispobj *b
 
   do {
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
-    if (res != MPS_RES_OK) error("OOM\n");
+    if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
     obj->fexpr.arg = arg;
     obj->fexpr.earg = earg;
@@ -63,7 +63,7 @@ inline lispobj* make_vector(size_t length, lispobj *fill) {
   do {
     size_t i;
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
-    if (res != MPS_RES_OK) error("OOM\n");
+    if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
     obj->vector.type = LT_VECTOR;
     obj->vector.length = length;

@@ -13,7 +13,7 @@
 #include "layout_malloc.h"
 
 /* shitty fucking malloc macro */
-#define SMALLOC(S) if (!(ret = GC_MALLOC(S))) error("OOM\n");
+#define SMALLOC(S) if (!(ret = GC_MALLOC(S))) return error("OOM\n");
 
 lispobj* make_symbol(const char* str, size_t len) {
   lisp_symbol *ret;
@@ -54,8 +54,10 @@ lispobj* make_nenv(lispobj* parent, size_t size) {
   ret->parent = parent;
   ret->length = size;
   ret->fillptr = 0;
-  if (!(ret->names = GC_MALLOC(size*sizeof(lispobj*)))) error("OOM");
-  if (!(ret->values = GC_MALLOC(size*sizeof(lispobj*)))) error("OOM\n");
+  if (!(ret->names = GC_MALLOC(size*sizeof(lispobj*))))
+    return error("OOM");
+  if (!(ret->values = GC_MALLOC(size*sizeof(lispobj*))))
+    return error("OOM\n");
   return (lispobj*)ret;
 }
 

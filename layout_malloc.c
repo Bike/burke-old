@@ -100,7 +100,7 @@ lispobj* vref(lispobj* vector, fixnum index) {
   if ((index >= vlength(vector)) || (index < 0)) {
     write_vector(vector, lstderr);
     fputc('\n', stderr);
-    error("out of bounds: index %ld\n", index); // FIXME: better error handling
+    return error("out of bounds: index %ld\n", index); // FIXME: better error handling
   } else
     return (vector->vector.data)[index];
 }

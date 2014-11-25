@@ -24,6 +24,7 @@ int truth(lispobj *val) {
   if (val == sharp_t) return 1;
   if (val == sharp_f) return 0;
   error("truth of a non boolean");
+  return 0; // this is a bad idea
 }
 
 lispobj* list(int count, ...) {
@@ -74,7 +75,7 @@ lispobj* eval(lispobj *obj, lispobj *env) {
   lispobj* user_eval = vref(user_evals, objtype);
 
   if (undefinedp(user_eval))
-    // error("No user evaluator for object type %d", objtype);
+    // return error("No user evaluator for object type %d", objtype);
     return obj; // self-evaluate by default - bad idea maybe?
   else
     return combine(user_eval, list(2, obj, env), empty_environment);
@@ -88,7 +89,7 @@ lispobj* combine(lispobj *combiner, lispobj *combinand, lispobj *env) {
     return standard_fsubr_combine(combiner, combinand, env);
 
   if (undefinedp(user_combine))
-    error("No user combiner for combiner type %d\n", combinertype);
+    return error("No user combiner for combiner type %d\n", combinertype);
   else
     return combine(user_combine, list(3, combiner, combinand, env), empty_environment);
 }
@@ -98,7 +99,7 @@ lispobj* lookup(lispobj *name, lispobj* env) {
   lispobj* user_lookup = vref(user_lookups, envtype);
 
   if (undefinedp(user_lookup))
-    error("No user lookup for env type %d\n", envtype);
+    return error("No user lookup for env type %d\n", envtype);
   else
     return combine(user_lookup, list(2, name, env), empty_environment);
 }
@@ -206,7 +207,7 @@ lispobj* standard_nenv_lookup(lispobj* name, lispobj* nenv) {
       return values[i];
   }
   if (parent == NULL)
-    error("unbound\n"); // FIXME
+    return error("unbound\n"); // FIXME
   else
     return lookup(name, parent);
 }
@@ -220,7 +221,7 @@ lispobj* standard_smallenv_define(lispobj *name, lispobj *value, lispobj *smalle
   else if (eqp(name, smallenv_bind2_name(smallenv)))
     set_smallenv_bind2_name(smallenv, value);
   else
-    error("can't create new bindings in a smallenv\n");
+    return error("can't create new bindings in a smallenv\n");
 
   return inert;
 }
@@ -241,7 +242,7 @@ lispobj* standard_nenv_define(lispobj *name, lispobj *value, lispobj *nenv) {
 
   /* here we have mutability, in new definitions appearing */
   if (fillptr > nenv_length(nenv))
-    error("No space left in nenv!\n"); // FIXME goddamn
+    return error("No space left in nenv!\n"); // FIXME goddamn
   names[fillptr] = name;
   values[fillptr] = value;
   set_nenv_fillptr(nenv, fillptr + 1);
@@ -344,9 +345,9 @@ void initialize_globals(void) {
   if (lispobj_typep((EXPR), LT_PAIR))		\
     VAR = pair_car((EXPR));			\
   else						\
-    error("Not enough arguments\n");
+    return error("Not enough arguments\n");
 
-#define FSUBR_END(EXPR) if (!nullp(EXPR)) error("too many arguments\n");
+#define FSUBR_END(EXPR) if (!nullp(EXPR)) return error("too many arguments\n");
 
 #define FSUBR_AUX1(VAR1)			\
   FSUBR_ARG(combinand, VAR1);			\

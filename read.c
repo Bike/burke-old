@@ -15,7 +15,7 @@ lispobj* read_lisp(FILE *stream) {
   while(1) { /* eat whitespace */
     c = getc(stream);
     switch (c) {
-    case EOF: error("unexpected EOF\n");
+    case EOF: return error("unexpected EOF\n");
     case '(': return read_delimited_list(stream, ')');
     case '#': return read_sharp(stream);
     default:
@@ -32,10 +32,10 @@ lispobj* read_lisp(FILE *stream) {
 }
 
 lispobj* read_sharp(FILE* stream) {
-#define VERCHAR(CHAR) if (getc(stream) != CHAR) error("bad sharp\n");
+#define VERCHAR(CHAR) if (getc(stream) != CHAR) return error("bad sharp\n");
   int c = getc(stream);
   switch(c) {
-  case EOF: error("unexpected EOF\n");
+  case EOF: return error("unexpected EOF\n");
   case 't': return sharp_t;
   case 'f': return sharp_f;
   case 'i':
@@ -47,9 +47,9 @@ lispobj* read_sharp(FILE* stream) {
     case 'n':
       VERCHAR('e'); VERCHAR('r'); VERCHAR('t');
       return inert;
-    default: error("bad sharp\n");
+    default: return error("bad sharp\n");
     }
-  default: error("bad sharp\n");
+  default: return error("bad sharp\n");
   }
 }
 
@@ -59,7 +59,7 @@ lispobj* read_integer(FILE* stream) {
 
   result = fscanf(stream, FIXNUM_CONVERSION_SPEC, &in);
   if (result == 1) return make_fixnum(in);
-  error("problem parsing integer - %d: %s\n", errno, strerror(errno));
+  return error("problem parsing integer - %d: %s\n", errno, strerror(errno));
 }
 
 lispobj* read_delimited_list(FILE *stream, char stop) {
@@ -67,7 +67,7 @@ lispobj* read_delimited_list(FILE *stream, char stop) {
   int c;
   while(1) {
     c = getc(stream);
-    if (c == EOF) error("unexpected EOF\n");
+    if (c == EOF) return error("unexpected EOF\n");
     if (isspace(c)) continue;
     if (c == stop) return pair_cdr(ret);
     ungetc(c, stream);
@@ -100,7 +100,7 @@ lispobj* read_symbol(FILE *stream) {
     buf[so_far] = c;
     ++so_far;
     if (so_far == BUFFER_MAX)
-      error("symbol too long\n");
+      return error("symbol too long\n");
   }
-  error("unexpected EOF\n");
+  return error("unexpected EOF\n");
 }
