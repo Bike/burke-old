@@ -123,7 +123,7 @@ void write_fsubr(lispobj *fsubr, lispobj *port) {
 
   stream = port_stream(port);
 
-  fputs("#<FSUBR {", stream);
+  fputs("#<fsubr {", stream);
   fprintf(stream, "%p", fsubr_fun(fsubr));
   fputs("}>", stream);
 }
