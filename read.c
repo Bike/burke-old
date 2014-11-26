@@ -17,6 +17,7 @@ lispobj* read_lisp(FILE *stream) {
     switch (c) {
     case EOF: return error("unexpected EOF\n");
     case '(': return read_delimited_list(stream, ')');
+    case ')': return error("unexpected )\n");
     case '#': return read_sharp(stream);
     default:
       if (isspace(c)) continue;
@@ -70,6 +71,16 @@ lispobj* read_delimited_list(FILE *stream, char stop) {
     if (c == EOF) return error("unexpected EOF\n");
     if (isspace(c)) continue;
     if (c == stop) return pair_cdr(ret);
+    if (c == '.') {
+      // this may seem weird but I think it's a reasonable way
+      //  to catch the error while reading the list fully
+      lispobj *rest = read_delimited_list(stream, stop);
+      set_pair_cdr(head, pair_car(rest));
+      if (!nullp(pair_cdr(rest)))
+	return error("More than one object follows . in list\n");
+      else
+	return pair_cdr(ret);
+    }
     ungetc(c, stream);
     set_pair_cdr(head, make_pair(read_lisp(stream), nil));
     head = pair_cdr(head);
