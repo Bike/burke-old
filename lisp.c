@@ -273,6 +273,10 @@ void populate_ground(void) {
   DEFGROUND("evaluators", user_evals);
   DEFGROUND("lookupers", user_lookups);
 
+  DEFGROUND("stdin", lstdin);
+  DEFGROUND("stdout", lstdout);
+  DEFGROUND("stderr", lstderr);
+
   DEFGROUNDA("car", car_fsubr);
   DEFGROUNDA("cdr", cdr_fsubr);
   DEFGROUNDA("combine", combine_fsubr);
