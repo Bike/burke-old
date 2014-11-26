@@ -76,10 +76,12 @@ DECLARE_FSUBR(standard_symbol_write);
 DECLARE_FSUBR(standard_vector_write);
 DECLARE_FSUBR(standard_fsubr_write);
 DECLARE_FSUBR(standard_singleton_write);
+DECLARE_FSUBR(standard_mtag_write);
 DECLARE_FSUBR(tag_of);
 DECLARE_FSUBR(tag_equal);
 DECLARE_FSUBR(unwrap);
 DECLARE_FSUBR(wrap);
+DECLARE_FSUBR(app);
 DECLARE_FSUBR(write_lisp);
 
 #endif /* guard */

@@ -9,6 +9,8 @@
    This should be the only place using -> or . on lispobjs.
    Other than the allocation? maybe? */
 
+lisptag next_tag = LT_MTAG+1;
+
 inline lisptag tagof_lispobj(lispobj* obj) {
   return obj->tag.tag;
 }

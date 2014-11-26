@@ -11,6 +11,8 @@ union lispobj;
 typedef union lispobj lispobj;
 
 typedef int lisptag;
+#define TAG_MAX INT_MAX
+#define TAG_CONVERSION_SPEC "%d"
 
 typedef long fixnum; // in case i want to change it later
 #define FIXNUM_CONVERSION_SPEC "%ld" // for printf and scanf
@@ -35,6 +37,8 @@ enum {
   LT_PORT,
   LT_MTAG,
 }; // other LTs may be defined by the allocation code
+
+extern lisptag next_tag; // defined in layout
 
 inline lisptag tagof_lispobj(lispobj*);
 inline int lispobj_tagp(lispobj*, lisptag);
@@ -63,7 +67,8 @@ inline size_t nenv_fillptr(lispobj*);
 inline void set_nenv_fillptr(lispobj*,size_t);
 inline lispobj** nenv_names(lispobj*);
 inline lispobj** nenv_values(lispobj*);
-DECREADER(applicative, underlying);
+inline lispobj* applicative_underlying(lispobj*);
+inline lispobj* unwrap(lispobj*);
 DECACCESS(pair, car);
 DECACCESS(pair, cdr);
 inline FILE* port_stream(lispobj*);

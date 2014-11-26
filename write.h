@@ -14,5 +14,6 @@ DECWRITE(symbol);
 DECWRITE(vector);
 DECWRITE(fsubr);
 DECWRITE(singleton);
+DECWRITE(mtag);
 
 #endif /* guard */

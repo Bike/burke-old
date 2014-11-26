@@ -15,8 +15,11 @@ void write_lisp(lispobj *obj, lispobj *port) {
   lisptag objtag = tagof_lispobj(obj);
   lispobj *user_write = vref(user_writes, objtag);
 
-  if (undefinedp(user_write))
-    fputs("#<unknown>", port_stream(port));
+  if (undefinedp(user_write)) {
+    fputs("#<unknown (tag ", port_stream(port));
+    fprintf(port_stream(port), TAG_CONVERSION_SPEC, objtag);
+    fputs(")>", port_stream(port));
+  }
   else
     combine(user_write, list(2, obj, port), empty_environment);
 }
@@ -123,4 +126,17 @@ void write_fsubr(lispobj *fsubr, lispobj *port) {
   fputs("#<FSUBR {", stream);
   fprintf(stream, "%p", fsubr_fun(fsubr));
   fputs("}>", stream);
+}
+
+void write_mtag(lispobj *mtag, lispobj *port) {
+  FILE *stream;
+
+  assert_tag(mtag, LT_MTAG);
+  assert_tag(port, LT_PORT);
+
+  stream = port_stream(port);
+
+  fputs("#<mtag (", stream);
+  fprintf(stream, TAG_CONVERSION_SPEC, mtag_mtag(mtag));
+  fputs(")>", stream);
 }

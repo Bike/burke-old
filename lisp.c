@@ -289,6 +289,7 @@ void populate_ground(void) {
   DEFGROUNDA("write", write_lisp_fsubr);
   DEFGROUNDA("unwrap", unwrap_fsubr);
   DEFGROUNDA("wrap", wrap_fsubr);
+  DEFGROUNDA("app", app_fsubr);
 }
 
 void populate_evals(void) {
@@ -320,6 +321,7 @@ void populate_writes(void) {
   set_vref(user_writes, LT_VECTOR, make_fsubr(standard_vector_write_fsubr));
   set_vref(user_writes, LT_FSUBR, make_fsubr(standard_fsubr_write_fsubr));
   set_vref(user_writes, LT_SINGLETON, make_fsubr(standard_singleton_write_fsubr));
+  set_vref(user_writes, LT_MTAG, make_fsubr(standard_mtag_write_fsubr));
 }
 
 void initialize_globals(void) {
@@ -333,11 +335,11 @@ void initialize_globals(void) {
   empty_environment = make_nenv(NULL, 0);
   ground_environment = make_nenv(NULL, 271);
 
-  user_evals = make_vector(20); populate_evals();
-  user_combines = make_vector(20); populate_combines();
-  user_lookups = make_vector(20); populate_lookups();
-  user_defines = make_vector(20); populate_defines();
-  user_writes = make_vector(20); populate_writes();
+  user_evals = make_vector(next_tag); populate_evals();
+  user_combines = make_vector(next_tag); populate_combines();
+  user_lookups = make_vector(next_tag); populate_lookups();
+  user_defines = make_vector(next_tag); populate_defines();
+  user_writes = make_vector(next_tag); populate_writes();
 
   nil = make_singleton(0);
   inert = make_singleton(1);
@@ -461,6 +463,12 @@ SIMPLE_FSUBR2(standard_nenv_lookup, standard_nenv_lookup, name, lenv);
 SIMPLE_FSUBR3(standard_smallenv_define, standard_smallenv_define, name, value, denv);
 SIMPLE_FSUBR3(standard_nenv_define, standard_nenv_define, name, value, denv);
 
+lispobj* newtag(lispobj *combinand, lispobj *env) {
+  UNUSED(env);
+  assert(nullp(combinand));
+  return make_mtag(next_tag++);
+}
+
 lispobj* read_lisp_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   FSUBR_AUX1(port);
@@ -488,8 +496,14 @@ lispobj* write_lisp_fsubr(lispobj *combinand, lispobj *env) {
   return inert;
 }
 
-SIMPLE_FSUBR1(unwrap, applicative_underlying, applicative);
+SIMPLE_FSUBR1(unwrap, unwrap, applicative);
 lispobj* wrap_fsubr(lispobj *combinand, lispobj *env) {
+  UNUSED(env);
+  FSUBR_AUX2(tag, obj);
+  assert_tag(tag, LT_MTAG);
+  return make_wrapped(mtag_mtag(tag), obj);
+}
+lispobj* app_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   FSUBR_AUX1(combiner);
   return make_wrapped(LT_APPLICATIVE, combiner);
@@ -510,3 +524,4 @@ WRITE_FSUBR_AUX(symbol);
 WRITE_FSUBR_AUX(vector);
 WRITE_FSUBR_AUX(fsubr);
 WRITE_FSUBR_AUX(singleton);
+WRITE_FSUBR_AUX(mtag);
