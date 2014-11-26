@@ -28,6 +28,13 @@ int truth(lispobj *val) {
   return truth(error("truth of a non-boolean\n"));
 }
 
+inline lispobj* untruth(int bool) {
+  if (bool)
+    return sharp_t;
+  else
+    return sharp_f;
+}
+
 lispobj* list(int count, ...) {
   /* Return a lisp list of COUNT elements. */
   int i;
@@ -277,6 +284,8 @@ void populate_ground(void) {
   DEFGROUNDV("$if", if_fsubr);
   DEFGROUNDA("lookup", lookup_fsubr);
   DEFGROUNDA("read", read_lisp_fsubr);
+  DEFGROUNDA("tag-of", tag_of_fsubr);
+  DEFGROUNDA("tag=", tag_equal_fsubr);
   DEFGROUNDA("write", write_lisp_fsubr);
   DEFGROUNDA("unwrap", unwrap_fsubr);
   DEFGROUNDA("wrap", wrap_fsubr);
@@ -415,7 +424,7 @@ lispobj* define_fsubr(lispobj *combinand, lispobj *env) {
 lispobj* eqp_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   FSUBR_AUX2(a, b);
-  return eqp(a,b) ? sharp_t : sharp_f;
+  return untruth(eqp(a,b));
 }
 
 SIMPLE_FSUBR2(eval, eval, form, eenv);
@@ -457,6 +466,19 @@ lispobj* read_lisp_fsubr(lispobj *combinand, lispobj *env) {
   FSUBR_AUX1(port);
   assert_tag(port, LT_PORT);
   return read_lisp(port_stream(port));
+}
+
+lispobj* tag_of_fsubr(lispobj *combinand, lispobj *env) {
+  UNUSED(env);
+  FSUBR_AUX1(obj);
+  return make_mtag(tagof_lispobj(obj));
+}
+
+lispobj* tag_equal_fsubr(lispobj *combinand, lispobj *env) {
+  UNUSED(env);
+  FSUBR_AUX2(o1, o2);
+  assert_tag(o1, LT_MTAG); assert_tag(o2, LT_MTAG); // FIXME shouldn't be fatal errors
+  return untruth(mtag_mtag(o1) == mtag_mtag(o2));
 }
 
 lispobj* write_lisp_fsubr(lispobj *combinand, lispobj *env) {

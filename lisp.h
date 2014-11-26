@@ -13,6 +13,7 @@ extern lispobj *user_writes, *user_evals, *user_combines, *user_lookups, *user_d
 extern lispobj *ground_environment, *empty_environment;
 
 int truth(lispobj*);
+lispobj* untruth(int);
 
 lispobj* list(int, ...);
 lispobj* blank_list(fixnum);
@@ -75,6 +76,8 @@ DECLARE_FSUBR(standard_symbol_write);
 DECLARE_FSUBR(standard_vector_write);
 DECLARE_FSUBR(standard_fsubr_write);
 DECLARE_FSUBR(standard_singleton_write);
+DECLARE_FSUBR(tag_of);
+DECLARE_FSUBR(tag_equal);
 DECLARE_FSUBR(unwrap);
 DECLARE_FSUBR(wrap);
 DECLARE_FSUBR(write_lisp);

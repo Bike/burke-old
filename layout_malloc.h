@@ -82,6 +82,12 @@ typedef struct lisp_port {
   FILE *stream;
 } lisp_port;
 
+// for dealing with tags within lisp
+typedef struct lisp_mtag {
+  lisptag tag;
+  lisptag mtag;
+} lisp_mtag;
+
 // everything without one of the above IDs: defined by the user.
 typedef struct lisp_custom {
   // essentially a short name->value map.
@@ -112,6 +118,7 @@ union lispobj {
   lisp_custom custom;
   lisp_singleton singleton;
   lisp_port port;
+  lisp_mtag mtag;
 };
 
 #endif /* guard */

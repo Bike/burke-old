@@ -97,6 +97,11 @@ inline FILE* port_stream(lispobj* obj) {
   return obj->port.stream;
 }
 
+inline lisptag mtag_mtag(lispobj* obj) {
+  assert_tag(obj, LT_MTAG);
+  return obj->mtag.mtag;
+}
+
 inline fixnum vlength(lispobj* vector) {
   assert_tag(vector, LT_VECTOR);
   return vector->vector.length;

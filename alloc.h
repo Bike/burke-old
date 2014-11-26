@@ -15,5 +15,6 @@ lispobj* make_singleton(unsigned short);
 lispobj* make_fexpr(lispobj*,lispobj*,lispobj*,lispobj*);
 lispobj* make_vector(fixnum);
 lispobj* make_fixnum(fixnum);
+lispobj* make_mtag(lisptag);
 
 #endif // guard

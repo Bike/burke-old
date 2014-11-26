@@ -125,3 +125,12 @@ lispobj* make_fixnum(fixnum num) {
   ret->num = num;
   return (lispobj*)ret;
 }
+
+lispobj* make_mtag(lisptag tag) {
+  lisp_mtag *ret;
+
+  SMALLOC(sizeof(lisp_mtag));
+  ret->tag = LT_MTAG;
+  ret->mtag = tag;
+  return (lispobj*)ret;
+}
