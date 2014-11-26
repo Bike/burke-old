@@ -215,7 +215,7 @@ lispobj* standard_nenv_lookup(lispobj* name, lispobj* nenv) {
       return values[i];
   }
   if (parent == NULL)
-    return error("unbound\n"); // FIXME
+    return error("unbound: %s\n", symbol_name(name)); // FIXME
   else
     return lookup(name, parent);
 }
