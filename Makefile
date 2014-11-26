@@ -10,11 +10,14 @@ EXECUTABLE = lisp
 
 all: boehm
 
+debug: CFLAGS += -g
+debug: all
+
 boehm: $(IOBJECTS) alloc_boehm.o layout_malloc.o
-	$(CC) $(LDFLAGS) $(IOBJECTS) alloc_boehm.o layout_malloc.o -lgc -o $(EXECUTABLE)
+	$(CC) $(CFLAGS) $(IOBJECTS) alloc_boehm.o layout_malloc.o -lgc -o $(EXECUTABLE) $(LDFLAGS)
 
 malloc: $(IOBJECTS) alloc_malloc.o layout_malloc.o
-	$(CC) $(LDFLAGS) $(IOBJECTS) alloc_malloc.o layout_malloc.o -o $(EXECUTABLE)
+	$(CC) $(CFLAGS) $(IOBJECTS) alloc_malloc.o layout_malloc.o -o $(EXECUTABLE) $(LDFLAGS)
 
 clean:
 	rm lisp *.o
