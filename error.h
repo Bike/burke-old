@@ -21,10 +21,10 @@ typedef lispobj*(*error_handler)(const char* format, ...);
 
 extern _Thread_local error_handler error __attribute__ ((format(printf,1,2)));
 
-#define assert_type(LISPOBJ, TYPE)		\
+#define assert_tag(LISPOBJ, TAG)		\
   do {						\
     assert((LISPOBJ));				\
-    assert(lispobj_typep((LISPOBJ), (TYPE)));	\
+    assert(lispobj_tagp((LISPOBJ), (TAG)));	\
   } while(0)
     
 #endif

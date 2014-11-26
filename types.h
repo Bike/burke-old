@@ -10,7 +10,7 @@
 union lispobj;
 typedef union lispobj lispobj;
 
-typedef int lisptype;
+typedef int lisptag;
 
 typedef long fixnum; // in case i want to change it later
 #define FIXNUM_CONVERSION_SPEC "%ld" // for printf and scanf
@@ -19,7 +19,7 @@ typedef long fixnum; // in case i want to change it later
 typedef lispobj*(*fsubr_funptr)(lispobj*, lispobj*);
 
 enum {
-  // LT = "lisp type"
+  // LT = "lisp tag"
   LT_FIXNUM = 0,
   LT_PAIR,
   LT_SYMBOL,
@@ -29,13 +29,14 @@ enum {
   LT_FEXPR, // user defined operator
   LT_SMALLENV, // super simple environment just for fexpr use
   LT_NENV,
+  LT_WRAPPED,
   LT_APPLICATIVE,
   LT_SINGLETON, // (), #t, #f, etc
   LT_PORT,
 }; // other LTs may be defined by the allocation code
 
-inline lisptype typeof_lispobj(lispobj*);
-inline int lispobj_typep(lispobj*, lisptype);
+inline lisptag tagof_lispobj(lispobj*);
+inline int lispobj_tagp(lispobj*, lisptag);
 
 #define DECREADER(TYPENAME, REF) inline lispobj* TYPENAME##_##REF(lispobj*);
 #define DECWRITER(TYPENAME, REF) inline void set_##TYPENAME##_##REF(lispobj*,lispobj*);

@@ -10,7 +10,7 @@ inline lispobj* make_pair(lispobj *car, lispobj *cdr) {
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
     if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
-    obj->pair.type = LT_PAIR;
+    obj->pair.tag = LT_PAIR;
     obj->pair.car = car;
     obj->pair.cdr = cdr;
   } while(!mps_commit(obj_ap, addr, size));
@@ -28,7 +28,7 @@ inline lispobj* make_applicative(lispobj *underlying) {
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
     if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
-    obj->applicative.type = LT_APPLICATIVE;
+    obj->applicative.tag = LT_APPLICATIVE;
     obj->applicative.underlying = underlying;
   } while(!mps_commit(obj_ap, addr, size));
 
@@ -65,7 +65,7 @@ inline lispobj* make_vector(size_t length, lispobj *fill) {
     mps_res_t res = mps_reserve(&addr, obj_ap, size);
     if (res != MPS_RES_OK) return error("OOM\n");
     obj = addr;
-    obj->vector.type = LT_VECTOR;
+    obj->vector.tag = LT_VECTOR;
     obj->vector.length = length;
     for (i = 0; i < length; ++i)
       obj->vector.data[i] = fill;

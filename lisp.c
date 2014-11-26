@@ -72,45 +72,45 @@ fixnum list_length(lispobj* list) {
 /* BASIC EVALUATOR */
 
 lispobj* eval(lispobj *obj, lispobj *env) {
-  lisptype objtype = typeof_lispobj(obj);
-  lispobj* user_eval = vref(user_evals, objtype);
+  lisptag objtag = tagof_lispobj(obj);
+  lispobj* user_eval = vref(user_evals, objtag);
 
   if (undefinedp(user_eval))
-    // return error("No user evaluator for object type %d\n", objtype);
+    // return error("No user evaluator for object tag %d\n", objtag);
     return obj; // self-evaluate by default - bad idea maybe?
   else
     return combine(user_eval, list(2, obj, env), empty_environment);
 }
 
 lispobj* combine(lispobj *combiner, lispobj *combinand, lispobj *env) {
-  lisptype combinertype = typeof_lispobj(combiner);
-  lispobj* user_combine = vref(user_combines, combinertype);
+  lisptag combinertag = tagof_lispobj(combiner);
+  lispobj* user_combine = vref(user_combines, combinertag);
 
-  if (lispobj_typep(combiner, LT_FSUBR)) // break metacircle
+  if (lispobj_tagp(combiner, LT_FSUBR)) // break metacircle
     return standard_fsubr_combine(combiner, combinand, env);
 
   if (undefinedp(user_combine))
-    return error("No user combiner for combiner type %d\n", combinertype);
+    return error("No user combiner for combiner tag %d\n", combinertag);
   else
     return combine(user_combine, list(3, combiner, combinand, env), empty_environment);
 }
 
 lispobj* lookup(lispobj *name, lispobj* env) {
-  lisptype envtype = typeof_lispobj(env);
-  lispobj* user_lookup = vref(user_lookups, envtype);
+  lisptag envtag = tagof_lispobj(env);
+  lispobj* user_lookup = vref(user_lookups, envtag);
 
   if (undefinedp(user_lookup))
-    return error("No user lookup for env type %d\n", envtype);
+    return error("No user lookup for env tag %d\n", envtag);
   else
     return combine(user_lookup, list(2, name, env), empty_environment);
 }
 
 void define(lispobj *name, lispobj *value, lispobj *env) {
-  lisptype envtype = typeof_lispobj(env);
-  lispobj* user_define = vref(user_defines, envtype);
+  lisptag envtag = tagof_lispobj(env);
+  lispobj* user_define = vref(user_defines, envtag);
 
   if (undefinedp(user_define))
-    error("No user define for env type %d\n", envtype);
+    error("No user define for env tag %d\n", envtag);
   else
     combine(user_define, list(3, name, value, env), empty_environment);
 }
@@ -118,22 +118,22 @@ void define(lispobj *name, lispobj *value, lispobj *env) {
 /* STANDARD EVALUATION/ETC METHODS */
 
 lispobj* standard_symbol_eval(lispobj* symbol, lispobj* env) {
-  assert_type(symbol, LT_SYMBOL);
+  assert_tag(symbol, LT_SYMBOL);
   return lookup(symbol, env);
 }
 
 lispobj* standard_pair_eval(lispobj* pair, lispobj* env) {
-  assert_type(pair, LT_PAIR);
+  assert_tag(pair, LT_PAIR);
   return combine(eval(pair_car(pair), env), pair_cdr(pair), env);
 }
 
 lispobj* standard_fsubr_combine(lispobj* combiner, lispobj* combinand, lispobj* env) {
-  assert_type(combiner, LT_FSUBR);
+  assert_tag(combiner, LT_FSUBR);
   return (fsubr_fun(combiner))(combinand, env);
 }
 
 lispobj* standard_fexpr_combine(lispobj* combiner, lispobj* combinand, lispobj* env) {
-  assert_type(combiner, LT_FEXPR);
+  assert_tag(combiner, LT_FEXPR);
 
   lispobj* arg = fexpr_arg(combiner);
   lispobj* earg = fexpr_earg(combiner);
@@ -141,11 +141,11 @@ lispobj* standard_fexpr_combine(lispobj* combiner, lispobj* combinand, lispobj* 
   lispobj* body = fexpr_body(combiner);
 
   /* non-symbols should be understood at fexpr creation time */
-  if (lispobj_typep(arg, LT_SYMBOL)) {
+  if (lispobj_tagp(arg, LT_SYMBOL)) {
     set_smallenv_bind1_name(fenv, arg);
     set_smallenv_bind1_value(fenv, combinand);
   }
-  if (lispobj_typep(earg, LT_SYMBOL)) {
+  if (lispobj_tagp(earg, LT_SYMBOL)) {
     set_smallenv_bind2_name(fenv, earg);
     set_smallenv_bind2_value(fenv, env);
   }
@@ -155,7 +155,7 @@ lispobj* standard_fexpr_combine(lispobj* combiner, lispobj* combinand, lispobj* 
 
 lispobj* standard_applicative_combine(lispobj* combiner,
 				      lispobj* combinand, lispobj* env) {
-  assert_type(combiner, LT_APPLICATIVE);
+  assert_tag(combiner, LT_APPLICATIVE);
 
   lispobj* underlying = applicative_underlying(combiner);
   lispobj *evaled = nil;
@@ -164,7 +164,7 @@ lispobj* standard_applicative_combine(lispobj* combiner,
      the difference, of course, is that C has no closures (well, the new one does)
      and i don't want to bother with the void** callback shit if i can avoid it. */
   if (!nullp(combinand)) {
-    assert_type(combinand, LT_PAIR);
+    assert_tag(combinand, LT_PAIR);
 
     lispobj *cur;
 
@@ -172,7 +172,7 @@ lispobj* standard_applicative_combine(lispobj* combiner,
     for(;;) { // could be non-vacuous
       combinand = pair_cdr(combinand);
       if (nullp(combinand)) break;
-      assert_type(combinand, LT_PAIR); // these asserts are getting silly
+      assert_tag(combinand, LT_PAIR); // these asserts are getting silly
       set_pair_cdr(cur, make_pair(eval(pair_car(combinand), env), nil));
       cur = pair_cdr(cur);
     }
@@ -182,7 +182,7 @@ lispobj* standard_applicative_combine(lispobj* combiner,
 }
 
 lispobj* standard_smallenv_lookup(lispobj* name, lispobj* smallenv) {
-  assert_type(smallenv, LT_SMALLENV);
+  assert_tag(smallenv, LT_SMALLENV);
 
   if (eqp(name, smallenv_bind1_name(smallenv)))
     return smallenv_bind1_value(smallenv);
@@ -197,7 +197,7 @@ lispobj* standard_smallenv_lookup(lispobj* name, lispobj* smallenv) {
 }
 
 lispobj* standard_nenv_lookup(lispobj* name, lispobj* nenv) {
-  assert_type(nenv, LT_NENV);
+  assert_tag(nenv, LT_NENV);
 
   lispobj **names = nenv_names(nenv), **values = nenv_values(nenv);
   lispobj *parent = nenv_parent(nenv);
@@ -215,7 +215,7 @@ lispobj* standard_nenv_lookup(lispobj* name, lispobj* nenv) {
 
 /* since these are accessible, they gotta return something */
 lispobj* standard_smallenv_define(lispobj *name, lispobj *value, lispobj *smallenv) {
-  assert_type(smallenv, LT_SMALLENV);
+  assert_tag(smallenv, LT_SMALLENV);
 
   if (eqp(name, smallenv_bind1_name(smallenv)))
     set_smallenv_bind1_name(smallenv, value);
@@ -228,7 +228,7 @@ lispobj* standard_smallenv_define(lispobj *name, lispobj *value, lispobj *smalle
 }
 
 lispobj* standard_nenv_define(lispobj *name, lispobj *value, lispobj *nenv) {
-  assert_type(nenv, LT_NENV);
+  assert_tag(nenv, LT_NENV);
 
   lispobj **names = nenv_names(nenv), **values = nenv_values(nenv);
   size_t fillptr = nenv_fillptr(nenv);
@@ -258,7 +258,7 @@ lispobj* standard_nenv_define(lispobj *name, lispobj *value, lispobj *nenv) {
 #define DEFGROUND(STR, VALUE)					\
   standard_nenv_define(find_or_intern(STR), VALUE, ground_environment);
 #define DEFGROUNDV(STR, NAME) DEFGROUND(STR, make_fsubr(NAME));
-#define DEFGROUNDA(STR, NAME) DEFGROUND(STR, make_applicative(make_fsubr(NAME)));
+#define DEFGROUNDA(STR, NAME) DEFGROUND(STR, make_wrapped(LT_APPLICATIVE, make_fsubr(NAME)));
 
 void populate_ground(void) {
   DEFGROUND("combinators", user_combines);
@@ -343,7 +343,7 @@ void initialize_globals(void) {
 
 #define FSUBR_ARG(EXPR, VAR)			\
   lispobj *VAR;					\
-  if (lispobj_typep((EXPR), LT_PAIR))		\
+  if (lispobj_tagp((EXPR), LT_PAIR))		\
     VAR = pair_car((EXPR));			\
   else						\
     return error("Not enough arguments\n");
@@ -360,9 +360,9 @@ void initialize_globals(void) {
   FSUBR_END(pair_cdr(pair_cdr(combinand)));
 /*
   lispobj *VAR1, *VAR2;					\
-  assert_type(combinand, LT_PAIR);			\
+  assert_tag(combinand, LT_PAIR);			\
   VAR1 = pair_car(combinand);				\
-  assert_type(pair_cdr(combinand), LT_PAIR);		\
+  assert_tag(pair_cdr(combinand), LT_PAIR);		\
   VAR2 = pair_car(pair_cdr(combinand));			\
   assert(nullp(pair_cdr(pair_cdr(combinand))));
 */
@@ -423,8 +423,8 @@ SIMPLE_FSUBR2(eval, eval, form, eenv);
 lispobj* fexpr_fsubr(lispobj *combinand, lispobj *env) {
   FSUBR_AUX3(arg, earg, body);
 
-  if (!ignorep(arg)) assert_type(arg, LT_SYMBOL);
-  if (!ignorep(earg)) assert_type(earg, LT_SYMBOL);
+  if (!ignorep(arg)) assert_tag(arg, LT_SYMBOL);
+  if (!ignorep(earg)) assert_tag(earg, LT_SYMBOL);
 
   return make_fexpr(arg, earg, env, body);
 }
@@ -455,7 +455,7 @@ SIMPLE_FSUBR3(standard_nenv_define, standard_nenv_define, name, value, denv);
 lispobj* read_lisp_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   FSUBR_AUX1(port);
-  assert_type(port, LT_PORT);
+  assert_tag(port, LT_PORT);
   return read_lisp(port_stream(port));
 }
 
@@ -467,7 +467,11 @@ lispobj* write_lisp_fsubr(lispobj *combinand, lispobj *env) {
 }
 
 SIMPLE_FSUBR1(unwrap, applicative_underlying, applicative);
-SIMPLE_FSUBR1(wrap, make_applicative, combiner);
+lispobj* wrap_fsubr(lispobj *combinand, lispobj *env) {
+  UNUSED(env);
+  FSUBR_AUX1(combiner);
+  return make_wrapped(LT_APPLICATIVE, combiner);
+}
 
 #define WRITE_FSUBR_AUX(NAME)					\
   lispobj* standard_##NAME##_write_fsubr(lispobj *combinand,	\
