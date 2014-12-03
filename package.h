@@ -1,6 +1,8 @@
 #ifndef BURKE_PACKAGE_H
 #define BURKE_PACKAGE_H
 
+#include "types.h"
+
 extern lispobj *package;
 
 lispobj* intern(const char*);
