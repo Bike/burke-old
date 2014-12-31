@@ -75,6 +75,10 @@ lispobj* read_delimited_list(FILE *stream, char stop) {
       // this may seem weird but I think it's a reasonable way
       //  to catch the error while reading the list fully
       lispobj *rest = read_delimited_list(stream, stop);
+      if (nullp(rest)) // catch lists with nothing after .
+	return error("Nothing follows . in list\n");
+      if (head == ret) // catch (. whatever)
+	return error("Nothing appears before . in list\n");
       set_pair_cdr(head, pair_car(rest));
       if (!nullp(pair_cdr(rest)))
 	return error("More than one object follows . in list\n");
