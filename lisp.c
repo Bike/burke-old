@@ -287,9 +287,10 @@ void populate_ground(void) {
   DEFGROUNDV("$fexpr", fexpr_fsubr);
   DEFGROUNDV("$if", if_fsubr);
   DEFGROUNDA("lookup", lookup_fsubr);
+  DEFGROUNDA("newtag", newtag_fsubr);
   DEFGROUNDA("read", read_lisp_fsubr);
   DEFGROUNDA("tag-of", tag_of_fsubr);
-  DEFGROUNDA("tag=", tag_equal_fsubr);
+  DEFGROUNDA("tag=?", tag_equal_fsubr);
   DEFGROUNDA("write", write_lisp_fsubr);
   DEFGROUNDA("unwrap", unwrap_fsubr);
   DEFGROUNDA("wrap", wrap_fsubr);
@@ -467,7 +468,7 @@ SIMPLE_FSUBR2(standard_nenv_lookup, standard_nenv_lookup, name, lenv);
 SIMPLE_FSUBR3(standard_smallenv_define, standard_smallenv_define, name, value, denv);
 SIMPLE_FSUBR3(standard_nenv_define, standard_nenv_define, name, value, denv);
 
-lispobj* newtag(lispobj *combinand, lispobj *env) {
+lispobj* newtag_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   assert(nullp(combinand));
   return make_mtag(next_tag++);
