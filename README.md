@@ -5,16 +5,16 @@ Burke is a computer programming language based on [Kernel](http://web.cs.wpi.edu
 Build
 -----
 
-The runtime is called liblisp.so. If you have the Boehm garbage collector ("libgc"), you can use `make boehm' to produce it. If you don't, `make malloc' will produce something using libc's malloc and no freeing, so it'll burn through memory quick.
+The runtime is called liblisp.so. If you have the Boehm garbage collector ("libgc"), you can use `make boehm` to produce it. If you don't, `make malloc` can be used to produce something using libc's malloc and no freeing. It'll burn through memory quick.
 
-`make repl' will build an example program, a read-eval-print-loop, linked against a liblisp.so in the same directory.
+`make repl` will build an example program, a read-eval-print-loop, linked against a liblisp.so in the same directory.
 
-The default make target 'all' is just boehm + repl.
+The default make target `all` is just boehm + repl.
 
 Run
 ---
 
-The example repl needs to know where liblisp is. You can do this with an invocation like `LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./repl', assuming liblisp.so and repl are in the working directory. Of course, you could also install liblisp in /usr/local/lib or something.
+The example repl needs to know where liblisp is. You can do this with an invocation like `LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./repl`, assuming liblisp.so and repl are in the working directory. Of course, you could also install liblisp in /usr/local/lib or something.
 
 Goals
 -----
