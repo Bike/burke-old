@@ -112,7 +112,7 @@ inline fixnum vlength(lispobj* vector) {
 lispobj* vref(lispobj* vector, fixnum index) {
   assert_tag(vector, LT_VECTOR);
   if ((index >= vlength(vector)) || (index < 0)) {
-    write_vector(vector, lstderr);
+    // write_vector(vector, lstderr);
     fputc('\n', stderr);
     return error("out of bounds: index %ld\n", index); // FIXME: better error handling
   } else

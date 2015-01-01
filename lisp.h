@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include "types.h"
+#include "package.h" // lisp_package*
 
 #define UNUSED(x) ((void)x)
 
@@ -10,7 +11,7 @@
 extern lispobj *nil, *inert, *ignore, *sharp_t, *sharp_f;
 extern lispobj *lstdin, *lstdout, *lstderr;
 extern lispobj *user_writes, *user_evals, *user_combines, *user_lookups, *user_defines;
-extern lispobj *ground_environment, *empty_environment;
+extern lispobj *empty_environment;
 
 int truth(lispobj*);
 lispobj* untruth(int);
@@ -42,7 +43,7 @@ lispobj* standard_nenv_lookup(lispobj*, lispobj*);
 lispobj* standard_smallenv_define(lispobj*, lispobj*, lispobj*);
 lispobj* standard_nenv_define(lispobj*, lispobj*, lispobj*);
 
-void populate_ground(void);
+lispobj* make_ground(lisp_package*);
 void populate_combines(void);
 void populate_lookups(void);
 void populate_definers(void);

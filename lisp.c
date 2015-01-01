@@ -12,10 +12,9 @@
 #include "package.h"
 
 lispobj *nil = NULL, *inert = NULL, *ignore = NULL, *sharp_t = NULL, *sharp_f = NULL;
-lispobj *lstdin = NULL, *lstdout = NULL, *lstderr = NULL;
 lispobj *user_evals = NULL, *user_combines = NULL, *user_lookups = NULL;
 lispobj *user_writes = NULL, *user_defines = NULL;
-lispobj *ground_environment = NULL, *empty_environment = NULL;
+lispobj *empty_environment = NULL;
 
 /* MORE COMPLICATED LISPY/MISC FUNCTIONS IN C */
 
@@ -262,39 +261,49 @@ lispobj* standard_nenv_define(lispobj *name, lispobj *value, lispobj *nenv) {
 /* we have to use standard_nenv_define rather than define since we are,
    after all, defining the ability to define, among other things.
    double metacircles across the sky! */
-#define DEFGROUND(STR, VALUE)					\
-  standard_nenv_define(find_or_intern(STR), VALUE, ground_environment);
-#define DEFGROUNDV(STR, NAME) DEFGROUND(STR, make_fsubr(NAME));
-#define DEFGROUNDA(STR, NAME) DEFGROUND(STR, make_wrapped(LT_APPLICATIVE, make_fsubr(NAME)));
 
-void populate_ground(void) {
-  DEFGROUND("combinators", user_combines);
-  DEFGROUND("defines", user_defines);
-  DEFGROUND("evaluators", user_evals);
-  DEFGROUND("lookupers", user_lookups);
+lispobj* make_ground(lisp_package* p) {
 
-  DEFGROUND("stdin", lstdin);
-  DEFGROUND("stdout", lstdout);
-  DEFGROUND("stderr", lstderr);
+#define LDEF(STR, VALUE)					\
+  standard_nenv_define(find_or_intern(STR, p), VALUE, ret);
+#define LDEFV(STR, NAME) LDEF(STR, make_fsubr(NAME));
+#define LDEFA(STR, NAME)					\
+  LDEF(STR, make_wrapped(LT_APPLICATIVE, make_fsubr(NAME)));
 
-  DEFGROUNDA("car", car_fsubr);
-  DEFGROUNDA("cdr", cdr_fsubr);
-  DEFGROUNDA("combine", combine_fsubr);
-  DEFGROUNDA("cons", cons_fsubr);
-  DEFGROUNDA("define!", define_fsubr);
-  DEFGROUNDA("eq?", eqp_fsubr);
-  DEFGROUNDA("eval", eval_fsubr);
-  DEFGROUNDV("$fexpr", fexpr_fsubr);
-  DEFGROUNDV("$if", if_fsubr);
-  DEFGROUNDA("lookup", lookup_fsubr);
-  DEFGROUNDA("newtag", newtag_fsubr);
-  DEFGROUNDA("read", read_lisp_fsubr);
-  DEFGROUNDA("tag-of", tag_of_fsubr);
-  DEFGROUNDA("tag=?", tag_equal_fsubr);
-  DEFGROUNDA("write", write_lisp_fsubr);
-  DEFGROUNDA("unwrap", unwrap_fsubr);
-  DEFGROUNDA("wrap", wrap_fsubr);
-  DEFGROUNDA("app", app_fsubr);
+  lispobj* ret = make_nenv(NULL, 271);
+  
+  LDEF("combinators", user_combines);
+  LDEF("defines", user_defines);
+  LDEF("evaluators", user_evals);
+  LDEF("lookupers", user_lookups);
+
+  LDEF("package", (lispobj*)p); // FIXME
+
+  LDEFA("car", car_fsubr);
+  LDEFA("cdr", cdr_fsubr);
+  LDEFA("combine", combine_fsubr);
+  LDEFA("cons", cons_fsubr);
+  LDEFA("define!", define_fsubr);
+  LDEFA("eq?", eqp_fsubr);
+  LDEFA("eval", eval_fsubr);
+  LDEFV("$fexpr", fexpr_fsubr);
+  LDEFV("$if", if_fsubr);
+  LDEFA("lookup", lookup_fsubr);
+  LDEFA("newtag", newtag_fsubr);
+  LDEFA("read", read_lisp_fsubr);
+  LDEFA("tag-of", tag_of_fsubr);
+  LDEFA("tag=?", tag_equal_fsubr);
+  LDEFA("write", write_lisp_fsubr);
+  LDEFA("unwrap", unwrap_fsubr);
+  LDEFA("wrap", wrap_fsubr);
+  LDEFA("app", app_fsubr);
+
+  return ret;
+
+  /* probably not strictly necessary */
+#undef LDEF
+#undef LDEFV
+#undef LDEFV
 }
 
 void populate_evals(void) {
@@ -330,15 +339,8 @@ void populate_writes(void) {
 }
 
 void initialize_globals(void) {
-  /* all these constants are guesses on my part, not too important */
-  initialize_package();
-
-  lstdin = make_port(stdin);
-  lstdout = make_port(stdout);
-  lstderr = make_port(stderr);
 
   empty_environment = make_nenv(NULL, 0);
-  ground_environment = make_nenv(NULL, 271);
 
   user_evals = make_vector(next_tag); populate_evals();
   user_combines = make_vector(next_tag); populate_combines();
@@ -352,7 +354,6 @@ void initialize_globals(void) {
   sharp_t = make_singleton(3);
   sharp_f = make_singleton(4);
 
-  populate_ground();
 }
 
 /* STANDARD FSUBRS */
@@ -476,9 +477,10 @@ lispobj* newtag_fsubr(lispobj *combinand, lispobj *env) {
 
 lispobj* read_lisp_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
-  FSUBR_AUX1(port);
+  FSUBR_AUX2(port, package);
   assert_tag(port, LT_PORT);
-  return read_lisp(port_stream(port));
+  assert_tag(package, LT_PACKAGE);
+  return read_lisp(port_stream(port), (lisp_package*)package);
 }
 
 lispobj* tag_of_fsubr(lispobj *combinand, lispobj *env) {

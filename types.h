@@ -35,6 +35,7 @@ enum {
   LT_APPLICATIVE,
   LT_SINGLETON, // (), #t, #f, etc
   LT_PORT,
+  LT_PACKAGE,
   LT_MTAG,
 }; // other LTs may be defined by the allocation code
 

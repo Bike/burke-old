@@ -99,6 +99,13 @@ typedef struct lisp_custom {
   lispobj* values;
 } lisp_custom;
 
+typedef struct lisp_package {
+  lisptag tag;
+  size_t size;
+  size_t fill;
+  lispobj** symbols; // can't resize with a flexible w/o more indirect
+} lisp_package;
+
 typedef struct tag_hack {
   lisptag tag;
 } tag_hack;
@@ -117,6 +124,7 @@ union lispobj {
   lisp_wrapped wrapped;
   lisp_custom custom;
   lisp_singleton singleton;
+  lisp_package package;
   lisp_port port;
   lisp_mtag mtag;
 };

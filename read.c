@@ -10,13 +10,13 @@
 #include "package.h"
 #include "types.h" // fixnum
 
-lispobj* read_lisp(FILE *stream) {
+lispobj* read_lisp(FILE *stream, lisp_package *p) {
   int c;
   while(1) { /* eat whitespace */
     c = getc(stream);
     switch (c) {
     case EOF: return error("unexpected EOF\n");
-    case '(': return read_delimited_list(stream, ')');
+    case '(': return read_delimited_list(stream, p, ')');
     case ')': return error("unexpected )\n");
     case '#': return read_sharp(stream);
     default:
@@ -27,7 +27,7 @@ lispobj* read_lisp(FILE *stream) {
       }
       else {
 	ungetc(c, stream);
-	return read_symbol(stream); }
+	return read_symbol(stream, p); }
     }
   }
 }
@@ -63,7 +63,8 @@ lispobj* read_integer(FILE* stream) {
   return error("problem parsing integer - %d: %s\n", errno, strerror(errno));
 }
 
-lispobj* read_delimited_list(FILE *stream, char stop) {
+lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
+{
   lispobj *ret = make_pair(nil, nil), *head = ret;
   int c;
   while(1) {
@@ -74,7 +75,7 @@ lispobj* read_delimited_list(FILE *stream, char stop) {
     if (c == '.') {
       // this may seem weird but I think it's a reasonable way
       //  to catch the error while reading the list fully
-      lispobj *rest = read_delimited_list(stream, stop);
+      lispobj *rest = read_delimited_list(stream, p, stop);
       if (nullp(rest)) // catch lists with nothing after .
 	return error("Nothing follows . in list\n");
       if (head == ret) // catch (. whatever)
@@ -86,7 +87,7 @@ lispobj* read_delimited_list(FILE *stream, char stop) {
 	return pair_cdr(ret);
     }
     ungetc(c, stream);
-    set_pair_cdr(head, make_pair(read_lisp(stream), nil));
+    set_pair_cdr(head, make_pair(read_lisp(stream, p), nil));
     head = pair_cdr(head);
   }
 }
@@ -98,19 +99,19 @@ inline int isterminating(char c) { return c == ')'; } /* wow */
    (threading? argh i don't know) */
 static char buf[BUFFER_MAX];
 
-lispobj* read_symbol(FILE *stream) {
+lispobj* read_symbol(FILE *stream, lisp_package *p) {
   int c;
   size_t so_far = 0;
 
   while((c = getc(stream)) != EOF) {
     if (isspace(c)) {
       buf[so_far] = '\0';
-      return find_or_intern(buf); /* make_symbol has to copy! */
+      return find_or_intern(buf, p); /* make_symbol has to copy! */
     }
     if (isterminating(c)) {
       ungetc(c, stream);
       buf[so_far] = '\0';
-      return find_or_intern(buf);
+      return find_or_intern(buf, p);
     }
     buf[so_far] = c;
     ++so_far;
