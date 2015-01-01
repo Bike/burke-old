@@ -14,12 +14,10 @@ typedef lispobj*(*error_handler)(const char* format, ...);
 // some impls support threads but not C11, because they suck.
 #ifdef __GNUC__
 #define _Thread_local __thread
-#else
-#define _Thread_local
 #endif
 #endif
 
-extern _Thread_local error_handler error __attribute__ ((format(printf,1,2)));
+extern _Thread_local error_handler lerror __attribute__ ((format(printf,1,2)));
 
 #define assert_tag(LISPOBJ, TAG)		\
   do {						\

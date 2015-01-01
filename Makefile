@@ -1,23 +1,28 @@
 # let's give this a shot
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -fpic
 
 # I = "independent", as in for all targets
-ISOURCES = error.c lisp.c main.c package.c read.c write.c
+ISOURCES = error.c lisp.c package.c read.c write.c
 IOBJECTS = $(ISOURCES:.c=.o)
 
-EXECUTABLE = lisp
+LIBRARY = liblisp.so
 
-all: boehm
+EXECUTABLE = repl
+
+all: boehm repl
 
 debug: CFLAGS += -g
 debug: all
 
 boehm: $(IOBJECTS) alloc_boehm.o layout_malloc.o
-	$(CC) $(CFLAGS) $(IOBJECTS) alloc_boehm.o layout_malloc.o -lgc -o $(EXECUTABLE) $(LDFLAGS)
+	$(CC) $(CFLAGS) -shared $(IOBJECTS) alloc_boehm.o layout_malloc.o -lgc -o $(LIBRARY) $(LDFLAGS)
 
 malloc: $(IOBJECTS) alloc_malloc.o layout_malloc.o
-	$(CC) $(CFLAGS) $(IOBJECTS) alloc_malloc.o layout_malloc.o -o $(EXECUTABLE) $(LDFLAGS)
+	$(CC) $(CFLAGS) -shared $(IOBJECTS) alloc_malloc.o layout_malloc.o -o $(LIBRARY) $(LDFLAGS)
+
+repl: repl.o
+	$(CC) $(CFLAGS) -L. -o $(EXECUTABLE) repl.o -llisp
 
 clean:
-	rm lisp *.o
+	rm -f $(EXECUTABLE) $(LIBRARY) *.o

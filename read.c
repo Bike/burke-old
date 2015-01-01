@@ -15,9 +15,9 @@ lispobj* read_lisp(FILE *stream, lisp_package *p) {
   while(1) { /* eat whitespace */
     c = getc(stream);
     switch (c) {
-    case EOF: return error("unexpected EOF\n");
+    case EOF: return lerror("unexpected EOF\n");
     case '(': return read_delimited_list(stream, p, ')');
-    case ')': return error("unexpected )\n");
+    case ')': return lerror("unexpected )\n");
     case '#': return read_sharp(stream);
     default:
       if (isspace(c)) continue;
@@ -33,10 +33,10 @@ lispobj* read_lisp(FILE *stream, lisp_package *p) {
 }
 
 lispobj* read_sharp(FILE* stream) {
-#define VERCHAR(CHAR) if (getc(stream) != CHAR) return error("bad sharp\n");
+#define VERCHAR(CHAR) if (getc(stream) != CHAR) return lerror("bad sharp\n");
   int c = getc(stream);
   switch(c) {
-  case EOF: return error("unexpected EOF\n");
+  case EOF: return lerror("unexpected EOF\n");
   case 't': return sharp_t;
   case 'f': return sharp_f;
   case 'i':
@@ -48,9 +48,9 @@ lispobj* read_sharp(FILE* stream) {
     case 'n':
       VERCHAR('e'); VERCHAR('r'); VERCHAR('t');
       return inert;
-    default: return error("bad sharp\n");
+    default: return lerror("bad sharp\n");
     }
-  default: return error("bad sharp\n");
+  default: return lerror("bad sharp\n");
   }
 }
 
@@ -60,7 +60,7 @@ lispobj* read_integer(FILE* stream) {
 
   result = fscanf(stream, FIXNUM_CONVERSION_SPEC, &in);
   if (result == 1) return make_fixnum(in);
-  return error("problem parsing integer - %d: %s\n", errno, strerror(errno));
+  return lerror("problem parsing integer - %d: %s\n", errno, strerror(errno));
 }
 
 lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
@@ -69,7 +69,7 @@ lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
   int c;
   while(1) {
     c = getc(stream);
-    if (c == EOF) return error("unexpected EOF\n");
+    if (c == EOF) return lerror("unexpected EOF\n");
     if (isspace(c)) continue;
     if (c == stop) return pair_cdr(ret);
     if (c == '.') {
@@ -77,12 +77,12 @@ lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
       //  to catch the error while reading the list fully
       lispobj *rest = read_delimited_list(stream, p, stop);
       if (nullp(rest)) // catch lists with nothing after .
-	return error("Nothing follows . in list\n");
+	return lerror("Nothing follows . in list\n");
       if (head == ret) // catch (. whatever)
-	return error("Nothing appears before . in list\n");
+	return lerror("Nothing appears before . in list\n");
       set_pair_cdr(head, pair_car(rest));
       if (!nullp(pair_cdr(rest)))
-	return error("More than one object follows . in list\n");
+	return lerror("More than one object follows . in list\n");
       else
 	return pair_cdr(ret);
     }
@@ -116,7 +116,7 @@ lispobj* read_symbol(FILE *stream, lisp_package *p) {
     buf[so_far] = c;
     ++so_far;
     if (so_far == BUFFER_MAX)
-      return error("symbol too long\n");
+      return lerror("symbol too long\n");
   }
-  return error("unexpected EOF\n");
+  return lerror("unexpected EOF\n");
 }

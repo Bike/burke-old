@@ -114,7 +114,7 @@ lispobj* vref(lispobj* vector, fixnum index) {
   if ((index >= vlength(vector)) || (index < 0)) {
     // write_vector(vector, lstderr);
     fputc('\n', stderr);
-    return error("out of bounds: index %ld\n", index); // FIXME: better error handling
+    return lerror("out of bounds: index %ld\n", index); // FIXME: better error handling
   } else
     return (vector->vector.data)[index];
 }
@@ -122,7 +122,7 @@ lispobj* vref(lispobj* vector, fixnum index) {
 void set_vref(lispobj *vector, fixnum index, lispobj *value) {
   assert_tag(vector, LT_VECTOR);
   if ((index > vlength(vector)) || (index < 0))
-    error("out of bounds\n");
+    lerror("out of bounds\n");
   else
     (vector->vector.data)[index] = value;
 }

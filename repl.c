@@ -27,7 +27,7 @@ int main(void) {
   lisp_package* package = make_package(100);
   lispobj* ground = make_ground(package);
   lispobj* lstdout = make_port(stdout);
-  error = jump_with_eof; // set up error handler
+  lerror = jump_with_eof; // set up error handler
   setjmp(err_jmp); // don't care about return
   while(1) {
     write_lisp(eval(read_lisp(stdin, package), ground), lstdout);

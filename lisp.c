@@ -24,7 +24,7 @@ int truth(lispobj *val) {
   if (val == sharp_f) return 0;
   // If it isn't a boolean, prompt the error handler for a boolean.
   // Sure hope the compiler has tail calls.
-  return truth(error("truth of a non-boolean\n"));
+  return truth(lerror("truth of a non-boolean\n"));
 }
 
 inline lispobj* untruth(int bool) {
@@ -82,7 +82,7 @@ lispobj* eval(lispobj *obj, lispobj *env) {
   lispobj* user_eval = vref(user_evals, objtag);
 
   if (undefinedp(user_eval))
-    // return error("No user evaluator for object tag %d\n", objtag);
+    // return lerror("No user evaluator for object tag %d\n", objtag);
     return obj; // self-evaluate by default - bad idea maybe?
   else
     return combine(user_eval, list(2, obj, env), empty_environment);
@@ -96,7 +96,7 @@ lispobj* combine(lispobj *combiner, lispobj *combinand, lispobj *env) {
     return standard_fsubr_combine(combiner, combinand, env);
 
   if (undefinedp(user_combine))
-    return error("No user combiner for combiner tag %d\n", combinertag);
+    return lerror("No user combiner for combiner tag %d\n", combinertag);
   else
     return combine(user_combine, list(3, combiner, combinand, env), empty_environment);
 }
@@ -106,7 +106,7 @@ lispobj* lookup(lispobj *name, lispobj* env) {
   lispobj* user_lookup = vref(user_lookups, envtag);
 
   if (undefinedp(user_lookup))
-    return error("No user lookup for env tag %d\n", envtag);
+    return lerror("No user lookup for env tag %d\n", envtag);
   else
     return combine(user_lookup, list(2, name, env), empty_environment);
 }
@@ -116,7 +116,7 @@ void define(lispobj *name, lispobj *value, lispobj *env) {
   lispobj* user_define = vref(user_defines, envtag);
 
   if (undefinedp(user_define))
-    error("No user define for env tag %d\n", envtag);
+    lerror("No user define for env tag %d\n", envtag);
   else
     combine(user_define, list(3, name, value, env), empty_environment);
 }
@@ -214,7 +214,7 @@ lispobj* standard_nenv_lookup(lispobj* name, lispobj* nenv) {
       return values[i];
   }
   if (parent == NULL)
-    return error("unbound: %s\n", symbol_name(name)); // FIXME
+    return lerror("unbound: %s\n", symbol_name(name)); // FIXME
   else
     return lookup(name, parent);
 }
@@ -228,7 +228,7 @@ lispobj* standard_smallenv_define(lispobj *name, lispobj *value, lispobj *smalle
   else if (eqp(name, smallenv_bind2_name(smallenv)))
     set_smallenv_bind2_name(smallenv, value);
   else
-    return error("can't create new bindings in a smallenv\n");
+    return lerror("can't create new bindings in a smallenv\n");
 
   return inert;
 }
@@ -249,7 +249,7 @@ lispobj* standard_nenv_define(lispobj *name, lispobj *value, lispobj *nenv) {
 
   /* here we have mutability, in new definitions appearing */
   if (fillptr > nenv_length(nenv))
-    return error("No space left in nenv!\n"); // FIXME goddamn
+    return lerror("No space left in nenv!\n"); // FIXME goddamn
   names[fillptr] = name;
   values[fillptr] = value;
   set_nenv_fillptr(nenv, fillptr + 1);
@@ -363,9 +363,9 @@ void initialize_globals(void) {
   if (lispobj_tagp((EXPR), LT_PAIR))		\
     VAR = pair_car((EXPR));			\
   else						\
-    return error("Not enough arguments\n");
+    return lerror("Not enough arguments\n");
 
-#define FSUBR_END(EXPR) if (!nullp(EXPR)) return error("too many arguments\n");
+#define FSUBR_END(EXPR) if (!nullp(EXPR)) return lerror("too many arguments\n");
 
 #define FSUBR_AUX1(VAR1)			\
   FSUBR_ARG(combinand, VAR1);			\
