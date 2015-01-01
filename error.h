@@ -19,10 +19,16 @@ typedef lispobj*(*error_handler)(const char* format, ...);
 
 extern _Thread_local error_handler lerror __attribute__ ((format(printf,1,2)));
 
-#define assert_tag(LISPOBJ, TAG)		\
+/* ~ multiple evaluation ~ */
+#define check_tag(LISPOBJ, TAG)			\
   do {						\
     assert((LISPOBJ));				\
-    assert(lispobj_tagp((LISPOBJ), (TAG)));	\
+    if(!lispobj_tagp((LISPOBJ), (TAG)))		\
+      lerror("Tag mismatch: expected "		\
+	     TAG_CONVERSION_SPEC " but got "	\
+	     TAG_CONVERSION_SPEC "\n",		\
+	     TAG,				\
+	     tagof_lispobj(LISPOBJ));		\
   } while(0)
     
 #endif

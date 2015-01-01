@@ -27,8 +27,8 @@ void write_lisp(lispobj *obj, lispobj *port) {
 void write_singleton(lispobj *singleton, lispobj *port) {
   FILE *stream;
 
-  assert_tag(singleton, LT_SINGLETON);
-  assert_tag(port, LT_PORT);
+  check_tag(singleton, LT_SINGLETON);
+  check_tag(port, LT_PORT);
 
   stream = port_stream(port);
 
@@ -54,8 +54,8 @@ void write_singleton(lispobj *singleton, lispobj *port) {
 void write_pair(lispobj *pair, lispobj *port) {
   lispobj *cdr;
   FILE *stream;
-  assert_tag(pair, LT_PAIR);
-  assert_tag(port, LT_PORT);
+  check_tag(pair, LT_PAIR);
+  check_tag(port, LT_PORT);
 
   stream = port_stream(port);
 
@@ -85,22 +85,22 @@ void write_pair(lispobj *pair, lispobj *port) {
 
 void write_fixnum(lispobj *fixnum, lispobj *port) {
   // UNUSED(stream);
-  assert_tag(fixnum, LT_FIXNUM);
-  assert_tag(port, LT_PORT);
+  check_tag(fixnum, LT_FIXNUM);
+  check_tag(port, LT_PORT);
   fprintf(port_stream(port), FIXNUM_CONVERSION_SPEC, fixnum_num(fixnum));
 }
 
 void write_symbol(lispobj *symbol, lispobj *port) {
-  assert_tag(symbol, LT_SYMBOL);
-  assert_tag(port, LT_PORT);
+  check_tag(symbol, LT_SYMBOL);
+  check_tag(port, LT_PORT);
   fputs(symbol_name(symbol), port_stream(port));
 }
 
 void write_vector(lispobj *vector, lispobj *port) {
   fixnum i, len;
   FILE *stream;
-  assert_tag(vector, LT_VECTOR);
-  assert_tag(port, LT_PORT);
+  check_tag(vector, LT_VECTOR);
+  check_tag(port, LT_PORT);
 
   stream = port_stream(port);
 
@@ -118,8 +118,8 @@ void write_vector(lispobj *vector, lispobj *port) {
 void write_fsubr(lispobj *fsubr, lispobj *port) {
   FILE *stream;
 
-  assert_tag(fsubr, LT_FSUBR);
-  assert_tag(port, LT_PORT);
+  check_tag(fsubr, LT_FSUBR);
+  check_tag(port, LT_PORT);
 
   stream = port_stream(port);
 
@@ -131,8 +131,8 @@ void write_fsubr(lispobj *fsubr, lispobj *port) {
 void write_mtag(lispobj *mtag, lispobj *port) {
   FILE *stream;
 
-  assert_tag(mtag, LT_MTAG);
-  assert_tag(port, LT_PORT);
+  check_tag(mtag, LT_MTAG);
+  check_tag(port, LT_PORT);
 
   stream = port_stream(port);
 

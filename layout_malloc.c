@@ -20,12 +20,12 @@ inline int lispobj_tagp(lispobj* obj, lisptag tag) {
 
 #define DEFREADER(TYPENAME, TYPEID, REF)	   \
   inline lispobj* TYPENAME##_##REF(lispobj* obj) { \
-    assert_tag(obj, TYPEID);			   \
+    check_tag(obj, TYPEID);			   \
     return obj->TYPENAME.REF;			   \
   }
 #define DEFWRITER(TYPENAME, TYPEID, REF)				\
   inline void set_##TYPENAME##_##REF(lispobj* obj, lispobj* value) {	\
-    assert_tag(obj, TYPEID);						\
+    check_tag(obj, TYPEID);						\
     obj->TYPENAME.REF = value;						\
   }
 #define DEFACCESS(TYPENAME, TYPEID, REF)	\
@@ -34,17 +34,17 @@ inline int lispobj_tagp(lispobj* obj, lisptag tag) {
 
 //DEFREADER(symbol, LT_SYMBOL, name);
 inline char* symbol_name(lispobj *obj) {
-  assert_tag(obj, LT_SYMBOL);
+  check_tag(obj, LT_SYMBOL);
   return obj->symbol.name;
 }
 
 inline fsubr_funptr fsubr_fun(lispobj *obj) {
-  assert_tag(obj, LT_FSUBR);
+  check_tag(obj, LT_FSUBR);
   return obj->fsubr.fun;
 }
 
 inline fixnum fixnum_num(lispobj *obj) {
-  assert_tag(obj, LT_FIXNUM);
+  check_tag(obj, LT_FIXNUM);
   return obj->fixnum.num;
 }
 
@@ -62,23 +62,23 @@ DEFACCESS(smallenv, LT_SMALLENV, bind2_value);
 DEFREADER(nenv, LT_NENV, parent);
 //DEFREADER(nenv, LT_NENV, length);
 inline size_t nenv_length(lispobj* obj) {
-  assert_tag(obj, LT_NENV);
+  check_tag(obj, LT_NENV);
   return obj->nenv.length;
 }
 inline size_t nenv_fillptr(lispobj* obj) {
-  assert_tag(obj, LT_NENV);
+  check_tag(obj, LT_NENV);
   return obj->nenv.fillptr;
 }
 inline void set_nenv_fillptr(lispobj* obj, size_t value) {
-  assert_tag(obj, LT_NENV);
+  check_tag(obj, LT_NENV);
   obj->nenv.fillptr = value;
 }
 inline lispobj** nenv_names(lispobj* obj) {
-  assert_tag(obj, LT_NENV);
+  check_tag(obj, LT_NENV);
   return obj->nenv.names;
 }
 inline lispobj** nenv_values(lispobj* obj) {
-  assert_tag(obj, LT_NENV);
+  check_tag(obj, LT_NENV);
   return obj->nenv.values;
 }
 
@@ -87,7 +87,7 @@ inline lispobj* unwrap(lispobj* obj) {
   return obj->wrapped.underlying;
 }
 inline lispobj* applicative_underlying(lispobj* obj) {
-  assert_tag(obj, LT_APPLICATIVE);
+  check_tag(obj, LT_APPLICATIVE);
   return obj->wrapped.underlying;
 }
 
@@ -95,22 +95,22 @@ DEFACCESS(pair, LT_PAIR, car);
 DEFACCESS(pair, LT_PAIR, cdr);
 
 inline FILE* port_stream(lispobj* obj) {
-  assert_tag(obj, LT_PORT);
+  check_tag(obj, LT_PORT);
   return obj->port.stream;
 }
 
 inline lisptag mtag_mtag(lispobj* obj) {
-  assert_tag(obj, LT_MTAG);
+  check_tag(obj, LT_MTAG);
   return obj->mtag.mtag;
 }
 
 inline fixnum vlength(lispobj* vector) {
-  assert_tag(vector, LT_VECTOR);
+  check_tag(vector, LT_VECTOR);
   return vector->vector.length;
 }
 
 lispobj* vref(lispobj* vector, fixnum index) {
-  assert_tag(vector, LT_VECTOR);
+  check_tag(vector, LT_VECTOR);
   if ((index >= vlength(vector)) || (index < 0)) {
     // write_vector(vector, lstderr);
     fputc('\n', stderr);
@@ -120,7 +120,7 @@ lispobj* vref(lispobj* vector, fixnum index) {
 }
 
 void set_vref(lispobj *vector, fixnum index, lispobj *value) {
-  assert_tag(vector, LT_VECTOR);
+  check_tag(vector, LT_VECTOR);
   if ((index > vlength(vector)) || (index < 0))
     lerror("out of bounds\n");
   else
