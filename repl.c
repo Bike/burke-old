@@ -28,6 +28,11 @@ int main(void) {
   lispobj* ground = make_ground(package);
   lispobj* lstdout = make_port(stdout);
   lerror = jump_with_eof; // set up error handler
+
+  define(find_or_intern("stdin", package), make_port(stdin), ground);
+  define(find_or_intern("stdout", package), lstdout, ground);
+  define(find_or_intern("stderr", package), make_port(stderr), ground);
+
   setjmp(err_jmp); // don't care about return
   while(1) {
     write_lisp(eval(read_lisp(stdin, package), ground), lstdout);
