@@ -392,31 +392,31 @@ void initialize_globals(void) {
   FSUBR_ARG(pair_cdr(pair_cdr(combinand)), VAR3);	\
   FSUBR_END(pair_cdr(pair_cdr(pair_cdr(combinand))));
 
-#define SIMPLE_FSUBR1(LNAME, CNAME, VAR1)			\
+#define SIMPLE_FSUBR1(LNAME, CNAME)				\
   lispobj* LNAME##_fsubr(lispobj *combinand, lispobj *env) {	\
     UNUSED(env);						\
-    FSUBR_AUX1(VAR1);						\
-    return CNAME(VAR1);						\
+    FSUBR_AUX1(v1);						\
+    return CNAME(v1);						\
   }
 
-#define SIMPLE_FSUBR2(LNAME, CNAME, VAR1, VAR2)			\
+#define SIMPLE_FSUBR2(LNAME, CNAME)				\
   lispobj* LNAME##_fsubr(lispobj *combinand, lispobj *env) {	\
     UNUSED(env);						\
-    FSUBR_AUX2(VAR1, VAR2);					\
-    return CNAME(VAR1, VAR2);					\
+    FSUBR_AUX2(v1, v2);						\
+    return CNAME(v1, v2);					\
   }
 
-#define SIMPLE_FSUBR3(LNAME, CNAME, VAR1, VAR2, VAR3)		\
+#define SIMPLE_FSUBR3(LNAME, CNAME)				\
   lispobj* LNAME##_fsubr(lispobj *combinand, lispobj *env) {	\
     UNUSED(env);						\
-    FSUBR_AUX3(VAR1, VAR2, VAR3);				\
-    return CNAME(VAR1, VAR2, VAR3);				\
+    FSUBR_AUX3(v1, v2, v3);					\
+    return CNAME(v1, v2, v3);					\
   }
 
-SIMPLE_FSUBR1(car, pair_car, cons);
-SIMPLE_FSUBR1(cdr, pair_cdr, cons);
-SIMPLE_FSUBR3(combine, combine, combiner, comb, cenv);
-SIMPLE_FSUBR2(cons, make_pair, car, cdr);
+SIMPLE_FSUBR1(car, pair_car);
+SIMPLE_FSUBR1(cdr, pair_cdr);
+SIMPLE_FSUBR3(combine, combine);
+SIMPLE_FSUBR2(cons, make_pair);
 
 /*
 lispobj* define_fsubr(lispobj *combinand, lispobj *env) {
@@ -437,7 +437,7 @@ lispobj* eqp_fsubr(lispobj *combinand, lispobj *env) {
   return untruth(eqp(a,b));
 }
 
-SIMPLE_FSUBR2(eval, eval, form, eenv);
+SIMPLE_FSUBR2(eval, eval);
 
 lispobj* fexpr_fsubr(lispobj *combinand, lispobj *env) {
   FSUBR_AUX3(arg, earg, body);
@@ -458,18 +458,17 @@ lispobj* if_fsubr(lispobj *combinand, lispobj *env) {
     return eval(alternate, env);
 }
 
-SIMPLE_FSUBR2(lookup, lookup, name, lenv);
+SIMPLE_FSUBR2(lookup, lookup);
 
-SIMPLE_FSUBR2(standard_symbol_eval, standard_symbol_eval, name, lenv);
-SIMPLE_FSUBR2(standard_pair_eval, standard_pair_eval, pair, lenv);
-SIMPLE_FSUBR3(standard_fsubr_combine, standard_fsubr_combine, op, comb, denv);
-SIMPLE_FSUBR3(standard_fexpr_combine, standard_fexpr_combine, op, comb, denv);
-SIMPLE_FSUBR3(standard_applicative_combine, standard_applicative_combine,
-	      combiner, comb, denv);
-SIMPLE_FSUBR2(standard_smallenv_lookup, standard_smallenv_lookup, name, lenv);
-SIMPLE_FSUBR2(standard_nenv_lookup, standard_nenv_lookup, name, lenv);
-SIMPLE_FSUBR3(standard_smallenv_define, standard_smallenv_define, name, value, denv);
-SIMPLE_FSUBR3(standard_nenv_define, standard_nenv_define, name, value, denv);
+SIMPLE_FSUBR2(standard_symbol_eval, standard_symbol_eval);
+SIMPLE_FSUBR2(standard_pair_eval, standard_pair_eval);
+SIMPLE_FSUBR3(standard_fsubr_combine, standard_fsubr_combine);
+SIMPLE_FSUBR3(standard_fexpr_combine, standard_fexpr_combine);
+SIMPLE_FSUBR3(standard_applicative_combine, standard_applicative_combine);
+SIMPLE_FSUBR2(standard_smallenv_lookup, standard_smallenv_lookup);
+SIMPLE_FSUBR2(standard_nenv_lookup, standard_nenv_lookup);
+SIMPLE_FSUBR3(standard_smallenv_define, standard_smallenv_define);
+SIMPLE_FSUBR3(standard_nenv_define, standard_nenv_define);
 
 lispobj* newtag_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
@@ -511,7 +510,7 @@ lispobj* write_lisp_fsubr(lispobj *combinand, lispobj *env) {
   return inert;
 }
 
-SIMPLE_FSUBR1(unwrap, wrapped_underlying, wrapped);
+SIMPLE_FSUBR1(unwrap, wrapped_underlying);
 lispobj* wrap_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   FSUBR_AUX2(tag, obj);
