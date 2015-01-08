@@ -163,7 +163,7 @@ lispobj* standard_applicative_combine(lispobj* combiner,
 				      lispobj* combinand, lispobj* env) {
   check_tag(combiner, LT_APPLICATIVE);
 
-  lispobj* underlying = applicative_underlying(combiner);
+  lispobj* underlying = wrapped_underlying(combiner);
   lispobj *evaled = nil;
 
   /* this is essentially map1. move out if it's needed elsewhere
@@ -511,7 +511,7 @@ lispobj* write_lisp_fsubr(lispobj *combinand, lispobj *env) {
   return inert;
 }
 
-SIMPLE_FSUBR1(unwrap, unwrap, applicative);
+SIMPLE_FSUBR1(unwrap, wrapped_underlying, wrapped);
 lispobj* wrap_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   FSUBR_AUX2(tag, obj);

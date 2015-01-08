@@ -115,7 +115,7 @@ void write_vector(lispobj *vector, lispobj *port) {
 
   stream = port_stream(port);
 
-  len = vlength(vector);
+  len = vector_length(vector);
 
   fputs("#(", stream);
   for(i = 0; i < len - 1; ++i) {
