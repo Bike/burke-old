@@ -290,6 +290,7 @@ lispobj* make_ground(lisp_package* p) {
   LDEFV("$if", if_fsubr);
   LDEFA("lookup", lookup_fsubr);
   LDEFA("newtag", newtag_fsubr);
+  LDEFV("$quote", quote_fsubr);
   LDEFA("read", read_lisp_fsubr);
   LDEFA("tag-of", tag_of_fsubr);
   LDEFA("tag=?", tag_equal_fsubr);
@@ -473,6 +474,12 @@ lispobj* newtag_fsubr(lispobj *combinand, lispobj *env) {
   UNUSED(env);
   assert(nullp(combinand));
   return make_mtag(next_tag++);
+}
+
+lispobj* quote_fsubr(lispobj *combinand, lispobj *env) {
+  UNUSED(env);
+  FSUBR_AUX1(obj);
+  return obj;
 }
 
 lispobj* read_lisp_fsubr(lispobj *combinand, lispobj *env) {

@@ -62,6 +62,7 @@ DECLARE_FSUBR(fexpr);
 DECLARE_FSUBR(if);
 DECLARE_FSUBR(lookup);
 DECLARE_FSUBR(newtag);
+DECLARE_FSUBR(quote);
 DECLARE_FSUBR(read_lisp);
 DECLARE_FSUBR(standard_symbol_eval);
 DECLARE_FSUBR(standard_pair_eval);
