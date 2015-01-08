@@ -336,6 +336,7 @@ void populate_writes(void) {
   set_vref(user_writes, LT_VECTOR, make_fsubr(standard_vector_write_fsubr));
   set_vref(user_writes, LT_FSUBR, make_fsubr(standard_fsubr_write_fsubr));
   set_vref(user_writes, LT_SINGLETON, make_fsubr(standard_singleton_write_fsubr));
+  set_vref(user_writes, LT_STRING, make_fsubr(standard_string_write_fsubr));
   set_vref(user_writes, LT_MTAG, make_fsubr(standard_mtag_write_fsubr));
 }
 
@@ -538,4 +539,5 @@ WRITE_FSUBR_AUX(symbol);
 WRITE_FSUBR_AUX(vector);
 WRITE_FSUBR_AUX(fsubr);
 WRITE_FSUBR_AUX(singleton);
+WRITE_FSUBR_AUX(string);
 WRITE_FSUBR_AUX(mtag);

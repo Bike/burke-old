@@ -79,6 +79,7 @@ DECLARE_FSUBR(standard_symbol_write);
 DECLARE_FSUBR(standard_vector_write);
 DECLARE_FSUBR(standard_fsubr_write);
 DECLARE_FSUBR(standard_singleton_write);
+DECLARE_FSUBR(standard_string_write);
 DECLARE_FSUBR(standard_mtag_write);
 DECLARE_FSUBR(tag_of);
 DECLARE_FSUBR(tag_equal);

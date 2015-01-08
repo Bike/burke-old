@@ -134,3 +134,17 @@ lispobj* make_mtag(lisptag tag) {
   ret->mtag = tag;
   return (lispobj*)ret;
 }
+
+lispobj* make_string(const char* str) {
+  lisp_string *ret;
+  size_t len;
+
+  len = strlen(str) + 1; // null termination
+
+  /* sizeof(char) == 1, but i think this is clearer, honestly. */
+  SMALLOC(sizeof(lisp_string) + len*sizeof(char));
+  ret->tag = LT_STRING;
+  strcpy(ret->string, str);
+  ret->string[len-1] = '\0';
+  return (lispobj*)ret;
+}

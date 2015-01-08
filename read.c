@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
-#include <string.h> // strerror, and probably strings at some point
+#include <string.h> // strerror
+#include <stddef.h> // size_t
+#include <stdint.h> // SIZE_MAX
+#include <stdlib.h> // *alloc
 
 #include "alloc.h"
 #include "error.h"
@@ -19,6 +22,7 @@ lispobj* read_lisp(FILE *stream, lisp_package *p) {
     case '(': return read_delimited_list(stream, p, ')');
     case ')': return lerror("unexpected )\n");
     case '#': return read_sharp(stream);
+    case '"': return read_string(stream);
     default:
       if (isspace(c)) continue;
       else if (isdigit(c)) {
@@ -119,4 +123,27 @@ lispobj* read_symbol(FILE *stream, lisp_package *p) {
       return lerror("symbol too long\n");
   }
   return lerror("unexpected EOF\n");
+}
+
+lispobj* read_string(FILE *stream) {
+  int c;
+  size_t so_far = 0, len = 10;
+  char *buf = malloc(len);
+  while((c = getc(stream)) != '"') {
+    if (c == EOF) lerror("unexpected EOF\n");
+    if (c == '\\') {
+      c = getc(stream);
+      if (c == EOF) lerror("unexpected EOF\n");
+    }
+    buf[so_far++] = c;
+    if (so_far == len) {
+      if (len > SIZE_MAX - len)
+	// maginot line programming
+	return lerror("string too long\n");
+      len *= 2;
+      buf = realloc(buf, len);
+    }
+  }
+  buf[so_far] = '\0';
+  return make_string(buf);
 }

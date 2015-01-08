@@ -96,6 +96,17 @@ void write_symbol(lispobj *symbol, lispobj *port) {
   fputs(symbol_name(symbol), port_stream(port));
 }
 
+void write_string(lispobj *string, lispobj *port) {
+  FILE *stream;
+  check_tag(string, LT_STRING);
+  check_tag(port, LT_PORT);
+
+  stream = port_stream(port);
+  putc('"', stream);
+  fputs(string_string(string), stream);
+  putc('"', stream);
+}
+
 void write_vector(lispobj *vector, lispobj *port) {
   fixnum i, len;
   FILE *stream;

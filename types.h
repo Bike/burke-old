@@ -36,6 +36,7 @@ enum {
   LT_SINGLETON, // (), #t, #f, etc
   LT_PORT,
   LT_PACKAGE,
+  LT_STRING,
   LT_MTAG,
 }; // other LTs may be defined by the allocation code
 
@@ -73,6 +74,7 @@ inline lispobj* unwrap(lispobj*);
 DECACCESS(pair, car);
 DECACCESS(pair, cdr);
 inline FILE* port_stream(lispobj*);
+inline char* string_string(lispobj*);
 inline lisptag mtag_mtag(lispobj*);
 
 inline fixnum vlength(lispobj*);

@@ -99,6 +99,11 @@ inline FILE* port_stream(lispobj* obj) {
   return obj->port.stream;
 }
 
+inline char* string_string(lispobj *obj) {
+  check_tag(obj, LT_STRING);
+  return obj->string.string;
+}
+
 inline lisptag mtag_mtag(lispobj* obj) {
   check_tag(obj, LT_MTAG);
   return obj->mtag.mtag;

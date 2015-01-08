@@ -10,5 +10,6 @@ lispobj* read_delimited_list(FILE*, lisp_package*, char);
 lispobj* read_symbol(FILE*, lisp_package*);
 lispobj* read_sharp(FILE*);
 lispobj* read_integer(FILE*);
+lispobj* read_string(FILE*);
 
 #endif /* guard */
