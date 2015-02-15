@@ -16,5 +16,6 @@ lispobj* make_fexpr(lispobj*,lispobj*,lispobj*,lispobj*);
 lispobj* make_vector(fixnum);
 lispobj* make_fixnum(fixnum);
 lispobj* make_mtag(lisptag);
+lispobj* make_string(const char*);
 
 #endif // guard

@@ -14,17 +14,21 @@ typedef lispobj*(*error_handler)(const char* format, ...);
 // some impls support threads but not C11, because they suck.
 #ifdef __GNUC__
 #define _Thread_local __thread
-#else
-#define _Thread_local
 #endif
 #endif
 
-extern _Thread_local error_handler error __attribute__ ((format(printf,1,2)));
+extern _Thread_local error_handler lerror __attribute__ ((format(printf,1,2)));
 
-#define assert_tag(LISPOBJ, TAG)		\
+/* ~ multiple evaluation ~ */
+#define check_tag(LISPOBJ, TAG)			\
   do {						\
     assert((LISPOBJ));				\
-    assert(lispobj_tagp((LISPOBJ), (TAG)));	\
+    if(!lispobj_tagp((LISPOBJ), (TAG)))		\
+      lerror("Tag mismatch: expected "		\
+	     TAG_CONVERSION_SPEC " but got "	\
+	     TAG_CONVERSION_SPEC "\n",		\
+	     TAG,				\
+	     tagof_lispobj(LISPOBJ));		\
   } while(0)
     
 #endif

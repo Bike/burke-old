@@ -1,14 +1,14 @@
 #ifndef BURKE_PACKAGE_H
 #define BURKE_PACKAGE_H
 
+#include <stddef.h> // size_t
 #include "types.h"
+#include "layout_malloc.h" // ugh. for package def
 
-extern lispobj *package;
+lispobj* intern(const char*, lisp_package*);
+lispobj* find_symbol(const char*, lisp_package*);
+lispobj* find_or_intern(const char*, lisp_package*);
 
-lispobj* intern(const char*);
-lispobj* find_symbol(const char*);
-lispobj* find_or_intern(const char*);
-
-void initialize_package(void);
+lisp_package* make_package(size_t);
 
 #endif /* guard */

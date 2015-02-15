@@ -17,7 +17,7 @@ typedef struct lisp_fixnum {
 typedef struct lisp_symbol {
   lisptag tag;
   /*lisp_vector *name;*/
-  char name[1]; // not lisp accessible, alas
+  char name[]; // not lisp accessible, alas
 } lisp_symbol;
 
 typedef struct lisp_vector {
@@ -26,6 +26,16 @@ typedef struct lisp_vector {
   fixnum length;
   lispobj *data[1];
 } lisp_vector;
+
+/* a specialized vector.
+ * in the future should have unicode bullshit, etc.
+ * and be immutable when i get to that.
+ * right now it's exactly like a symbol...
+ */
+typedef struct lisp_string {
+  lisptag tag;
+  char string[];
+} lisp_string;
 
 typedef struct lisp_character {
   lisptag tag;
@@ -99,6 +109,13 @@ typedef struct lisp_custom {
   lispobj* values;
 } lisp_custom;
 
+typedef struct lisp_package {
+  lisptag tag;
+  size_t size;
+  size_t fill;
+  lispobj** symbols; // can't resize with a flexible w/o more indirect
+} lisp_package;
+
 typedef struct tag_hack {
   lisptag tag;
 } tag_hack;
@@ -117,7 +134,9 @@ union lispobj {
   lisp_wrapped wrapped;
   lisp_custom custom;
   lisp_singleton singleton;
+  lisp_package package;
   lisp_port port;
+  lisp_string string;
   lisp_mtag mtag;
 };
 
