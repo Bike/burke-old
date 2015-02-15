@@ -65,7 +65,7 @@ lispobj* read_integer(FILE* stream) {
   errno = 0; // fscanf keeps chugging along but sets ERANGE, if that comes up.
   result = fscanf(stream, FIXNUM_CONVERSION_SPEC, &in);
   if (!errno && (result == 1)) return make_fixnum(in);
-  return error("problem parsing integer - %d: %s\n", errno, strerror(errno));
+  return lerror("problem parsing integer - %d: %s\n", errno, strerror(errno));
 }
 
 lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
