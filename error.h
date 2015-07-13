@@ -26,7 +26,7 @@ extern _Thread_local error_handler lerror __attribute__ ((format(printf,1,2)));
     if(!lispobj_tagp((LISPOBJ), (TAG)))		\
       lerror("Tag mismatch: expected "		\
 	     TAG_CONVERSION_SPEC " but got "	\
-	     TAG_CONVERSION_SPEC "\n",		\
+	     TAG_CONVERSION_SPEC,		\
 	     TAG,				\
 	     LO_TAG(*(LISPOBJ)));		\
   } while(0)

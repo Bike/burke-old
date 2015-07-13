@@ -10,14 +10,14 @@ fixnum vector_length(lisp_vector* vector) {
 
 lispobj* vref(lisp_vector* vector, fixnum index) {
   if ((index >= vector->length) || (index < 0)) {
-    return lerror("out of bounds: index " FIXNUM_CONVERSION_SPEC "\n",
+    return lerror("out of bounds: index " FIXNUM_CONVERSION_SPEC,
 		  index);
   } else return (vector->data)[index];
 }
 
 void set_vref(lisp_vector* vector, fixnum index, lispobj* value) {
   if ((index >= vector->length) || (index < 0)) {
-    lerror("out of bounds: index " FIXNUM_CONVERSION_SPEC "\n",
+    lerror("out of bounds: index " FIXNUM_CONVERSION_SPEC,
 	   index);
   } else (vector->data)[index] = value;
 }

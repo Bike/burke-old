@@ -17,8 +17,9 @@ lispobj* jump_with_eof(const char* format, ...) {
   va_list vargs;
   va_start(vargs, format);
   vfprintf(stderr, format, vargs);
+  putc('\n', stderr);
   va_end(vargs);
-  if (!strcmp(format, "unexpected EOF\n")) // ugh
+  if (!strcmp(format, "unexpected EOF")) // ugh
     exit(1);
   longjmp(err_jmp, 0);
 }

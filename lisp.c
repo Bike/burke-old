@@ -41,7 +41,7 @@ int truth(lispobj *val) {
   if (val == sharp_f) return 0;
   // If it isn't a boolean, prompt the error handler for a boolean.
   // Sure hope the compiler has tail calls.
-  return truth(lerror("truth of a non-boolean\n"));
+  return truth(lerror("truth of a non-boolean"));
 }
 
 inline lispobj* untruth(int bool) {
@@ -116,7 +116,7 @@ lispobj* eval(lispobj *obj, lispobj *env) {
   lispobj* user_eval = vref(LO_GET(lisp_vector, *user_evals), objtag);
 
   if (undefinedp(user_eval))
-    // return lerror("No user evaluator for object tag %d\n", objtag);
+    // return lerror("No user evaluator for object tag %d", objtag);
     return obj; // self-evaluate by default - bad idea maybe?
   else
     return combine(user_eval, list(2, obj, env), empty_environment);
@@ -132,7 +132,7 @@ lispobj* combine(lispobj *combiner, lispobj *combinand, lispobj *env) {
 			 combinand, env);
 
   if (undefinedp(user_combine))
-    return lerror("No user combiner for combiner tag %d\n", combinertag);
+    return lerror("No user combiner for combiner tag %d", combinertag);
   else
     return combine(user_combine,
 		   list(3, combiner, combinand, env),
@@ -145,7 +145,7 @@ lispobj* lookup(lispobj *name, lispobj* env) {
 			      envtag);
 
   if (undefinedp(user_lookup))
-    return lerror("No user lookup for env tag %d\n", envtag);
+    return lerror("No user lookup for env tag %d", envtag);
   else
     return combine(user_lookup, list(2, name, env), empty_environment);
 }
@@ -156,7 +156,7 @@ void define(lispobj *name, lispobj *value, lispobj *env) {
 			      envtag);
 
   if (undefinedp(user_define))
-    lerror("No user define for env tag %d\n", envtag);
+    lerror("No user define for env tag %d", envtag);
   else
     combine(user_define, list(3, name, value, env), empty_environment);
 }
