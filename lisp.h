@@ -44,7 +44,7 @@ lispobj* standard_nenv_lookup(lispobj*, lispobj*);
 lispobj* standard_smallenv_define(lispobj*, lispobj*, lispobj*);
 lispobj* standard_nenv_define(lispobj*, lispobj*, lispobj*);
 
-lispobj* make_ground(lisp_package*);
+lispobj* make_ground(lispobj*);
 void populate_combines(void);
 void populate_lookups(void);
 void populate_definers(void);

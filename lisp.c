@@ -227,7 +227,10 @@ lispobj* standard_nenv_define(lispobj *name, lispobj *value, lispobj *nenv) {
    after all, defining the ability to define, among other things.
    double metacircles across the sky! */
 
-lispobj* make_ground(lisp_package* p) {
+lispobj* make_ground(lispobj* p_o) {
+
+  check_tag(p_o, LT_PACKAGE);
+  lisp_package* p = LO_GET(lisp_package, *p_o);
 
 #define LDEF(STR, VALUE)					\
   standard_nenv_define(find_or_intern(STR, p), VALUE, ret);
@@ -242,7 +245,7 @@ lispobj* make_ground(lisp_package* p) {
   LDEF("evaluators", user_evals);
   LDEF("lookupers", user_lookups);
 
-  //LDEF("package", (lispobj*)p); // FIXME
+  LDEF("package", p_o);
 
   LDEFA("car", car_fsubr);
   LDEFA("cdr", cdr_fsubr);

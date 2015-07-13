@@ -29,7 +29,7 @@ int main(void) {
   // burke_state = initialize_state(); // "dynamic binding" through TLS
   lispobj* package_o = make_package(100);
   lisp_package* package = LO_GET(lisp_package, *package_o);
-  lispobj* ground = make_ground(package);
+  lispobj* ground = make_ground(package_o);
   lispobj* lstdout = make_port(stdout);
   lerror = jump_with_eof; // set up error handler
 
