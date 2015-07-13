@@ -1,21 +1,33 @@
 #ifndef BURKE_ALLOC_H
 #define BURKE_ALLOC_H
 
-#include <stdio.h> // for make_port
 #include "types.h"
+#include "error.h"
 
-lispobj* make_symbol(const char*, size_t);
-lispobj* make_pair(lispobj*, lispobj*);
-lispobj* make_smallenv(lispobj*);
-lispobj* make_nenv(lispobj*, size_t);
-lispobj* make_wrapped(lisptag, lispobj*);
-lispobj* make_port(FILE*);
-lispobj* make_fsubr(fsubr_funptr);
-lispobj* make_singleton(unsigned short);
-lispobj* make_fexpr(lispobj*,lispobj*,lispobj*,lispobj*);
-lispobj* make_vector(fixnum);
-lispobj* make_fixnum(fixnum);
-lispobj* make_mtag(lisptag);
-lispobj* make_string(const char*);
+// from mps examples scheme.c
+#define ALIGNMENT (sizeof(void*))
+/* Align size upwards to the next multiple of the word size. */
+#define ALIGN_WORD(size)			\
+  (((size) + ALIGNMENT - 1) & ~(ALIGNMENT - 1))
+/* Align size upwards to the next multiple of the word size, and
+ * additionally ensure that it's big enough to store a forwarding
+ * pointer. Evaluates its argument twice. */
+/*
+#define ALIGN_OBJ(size)                                \
+  (ALIGN_WORD(size) >= ALIGN_WORD(sizeof(fwd_s))       \
+   ? ALIGN_WORD(size)                                  \
+   : ALIGN_WORD(sizeof(fwd_s)))
+*/
+#define ALIGN_OBJ(size) ALIGN_WORD(size)
+#define ALIGN_LO(ltype) ALIGN_OBJ(SIZEOF_LO(ltype))
+#define ALIGN_LOD(size) ALIGN_OBJ(SIZEOF_LOD(size))
 
-#endif // guard
+#ifdef LALLOC_MPS // do not use this!
+#include "alloc_mps.h"
+#elif defined LALLOC_BOEHM
+#include "alloc_boehm.h"
+#elif defined LALLOC_MALLOC
+#include "alloc_malloc.h"
+#endif
+
+#endif /* guard */

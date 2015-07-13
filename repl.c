@@ -8,6 +8,8 @@
 #include "error.h"
 #include "package.h"
 #include "alloc.h"
+#include "types.h"
+#include "port.h"
 
 jmp_buf err_jmp;
 
@@ -24,7 +26,8 @@ lispobj* jump_with_eof(const char* format, ...) {
 int main(void) {
   initialize_globals(); // nil etc., same across threads
   // burke_state = initialize_state(); // "dynamic binding" through TLS
-  lisp_package* package = make_package(100);
+  lispobj* package_o = make_package(100);
+  lisp_package* package = LO_GET(lisp_package, *package_o);
   lispobj* ground = make_ground(package);
   lispobj* lstdout = make_port(stdout);
   lerror = jump_with_eof; // set up error handler

@@ -3,40 +3,51 @@
 #include "types.h"
 #include "error.h"
 #include "lisp.h"
+#include "port.h"
+#include "vector.h"
+#include "singleton.h"
+#include "pair.h"
+#include "fixnum.h"
+#include "symbol.h"
+#include "string.h"
+#include "fsubr.h"
+#include "mtag.h"
 
-/* i've been vacillating about what should have ports instead of streams,
-   and such. conventions are hard to decide on! */
+/* i've been vacillating about what should have ports instead of
+ * streams, and such. conventions are hard to decide on! */
 
 void write_lisp(lispobj *obj, lispobj *port) {
   if (undefinedp(obj)) { // KLUDGE
-    fputs("#<null>", port_stream(port));
+    fputs("#<null>", port_stream(LO_GET(lisp_port, *port)));
     return;
   }
-  lisptag objtag = tagof_lispobj(obj);
-  lispobj *user_write = vref(user_writes, objtag);
-
+  lisptag objtag = LO_TAG(*obj);
+  lispobj *user_write = vref(LO_GET(lisp_vector, *user_writes), objtag);
+  
   if (undefinedp(user_write)) {
-    fputs("#<unknown (tag ", port_stream(port));
-    fprintf(port_stream(port), TAG_CONVERSION_SPEC, objtag);
-    fputs(")>", port_stream(port));
+    fputs("#<unknown (tag ", port_stream(LO_GET(lisp_port, *port)));
+    fprintf(port_stream(LO_GET(lisp_port, *port)),
+	    TAG_CONVERSION_SPEC, objtag);
+    fputs(")>", port_stream(LO_GET(lisp_port, *port)));
   }
   else
     combine(user_write, list(2, obj, port), empty_environment);
 }
 
+// FIXME (along with the cases in the general function)
 void write_singleton(lispobj *singleton, lispobj *port) {
   FILE *stream;
 
-  check_tag(singleton, LT_SINGLETON);
   check_tag(port, LT_PORT);
 
-  stream = port_stream(port);
+  stream = port_stream(LO_GET(lisp_port, *port));
 
   /* This could be yet another layer of dispatch.
    * Maybe to just a vector of strings to print, rather than whole functions.
    * I wonder about users though. Gotta null terminate that shit?
    */
 
+  // FIXME: eqp for ==
   if (singleton == nil)
     fputs("()", stream);
   else if (singleton == inert)
@@ -57,19 +68,23 @@ void write_pair(lispobj *pair, lispobj *port) {
   check_tag(pair, LT_PAIR);
   check_tag(port, LT_PORT);
 
-  stream = port_stream(port);
+  stream = port_stream(LO_GET(lisp_port, *port));
 
   putc('(', stream);
   while (1) {
-    write_lisp(pair_car(pair), port);
-    cdr = pair_cdr(pair);
-    switch(tagof_lispobj(cdr)) {
+    write_lisp(pair_car(LO_GET(lisp_pair, *pair)), port);
+    cdr = pair_cdr(LO_GET(lisp_pair, *pair));
+    switch(LO_TAG(*cdr)) {
     case LT_PAIR:
       putc(' ', stream);
       pair = cdr;
       continue; /* while (1) */
-    case LT_SINGLETON:
-      if (cdr == nil) {
+    case LT_NIL:
+    case LT_IGNORE:
+    case LT_INERT:
+    case LT_TRUE:
+    case LT_FALSE:
+      if (nullp(cdr)) {
 	putc(')', stream);
 	return;
       }
@@ -83,17 +98,19 @@ void write_pair(lispobj *pair, lispobj *port) {
   }
 }
 
-void write_fixnum(lispobj *fixnum, lispobj *port) {
-  // UNUSED(stream);
-  check_tag(fixnum, LT_FIXNUM);
+void write_fixnum(lispobj *fixnum_o, lispobj *port) {
+  // weird name to avoid conflict with the type.
+  check_tag(fixnum_o, LT_FIXNUM);
   check_tag(port, LT_PORT);
-  fprintf(port_stream(port), FIXNUM_CONVERSION_SPEC, fixnum_num(fixnum));
+  fprintf(port_stream(LO_GET(lisp_port, *port)),
+	  FIXNUM_CONVERSION_SPEC, *LO_GET(fixnum, *fixnum_o));
 }
 
 void write_symbol(lispobj *symbol, lispobj *port) {
   check_tag(symbol, LT_SYMBOL);
   check_tag(port, LT_PORT);
-  fputs(symbol_name(symbol), port_stream(port));
+  fputs(symbol_name(LO_GET(lisp_symbol, *symbol)),
+	port_stream(LO_GET(lisp_port, *port)));
 }
 
 void write_string(lispobj *string, lispobj *port) {
@@ -101,19 +118,21 @@ void write_string(lispobj *string, lispobj *port) {
   check_tag(string, LT_STRING);
   check_tag(port, LT_PORT);
 
-  stream = port_stream(port);
+  stream = port_stream(LO_GET(lisp_port, *port));
   putc('"', stream);
-  fputs(string_string(string), stream);
+  fputs(string_string(LO_GET(lisp_string, *string)), stream);
   putc('"', stream);
 }
 
-void write_vector(lispobj *vector, lispobj *port) {
+void write_vector(lispobj *v, lispobj *port) {
   fixnum i, len;
   FILE *stream;
-  check_tag(vector, LT_VECTOR);
+  lisp_vector* vector;
+  check_tag(v, LT_VECTOR);
   check_tag(port, LT_PORT);
 
-  stream = port_stream(port);
+  vector = LO_GET(lisp_vector, *v);
+  stream = port_stream(LO_GET(lisp_port, *port));
 
   len = vector_length(vector);
 
@@ -132,10 +151,10 @@ void write_fsubr(lispobj *fsubr, lispobj *port) {
   check_tag(fsubr, LT_FSUBR);
   check_tag(port, LT_PORT);
 
-  stream = port_stream(port);
+  stream = port_stream(LO_GET(lisp_port, *port));
 
   fputs("#<fsubr {", stream);
-  fprintf(stream, "%p", fsubr_fun(fsubr));
+  fprintf(stream, "%p", (void*)LO_GET(lisp_fsubr, *fsubr));
   fputs("}>", stream);
 }
 
@@ -145,9 +164,10 @@ void write_mtag(lispobj *mtag, lispobj *port) {
   check_tag(mtag, LT_MTAG);
   check_tag(port, LT_PORT);
 
-  stream = port_stream(port);
+  stream = port_stream(LO_GET(lisp_port, *port));
 
   fputs("#<mtag (", stream);
-  fprintf(stream, TAG_CONVERSION_SPEC, mtag_mtag(mtag));
+  fprintf(stream,
+	  TAG_CONVERSION_SPEC, mtag_mtag(LO_GET(lisptag, *mtag)));
   fputs(")>", stream);
 }

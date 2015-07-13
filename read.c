@@ -6,12 +6,16 @@
 #include <stdint.h> // SIZE_MAX
 #include <stdlib.h> // *alloc
 
-#include "alloc.h"
+#include "types.h"
 #include "error.h"
 #include "read.h"
-#include "lisp.h"
 #include "package.h"
-#include "types.h" // fixnum
+#include "fixnum.h"
+#include "singleton.h"
+#include "string.h"
+#include "pair.h"
+#include "symbol.h"
+#include "lisp.h" // nullp
 
 lispobj* read_lisp(FILE *stream, lisp_package *p) {
   int c;
@@ -65,7 +69,7 @@ lispobj* read_integer(FILE* stream) {
   errno = 0; // fscanf keeps chugging along but sets ERANGE, if that comes up.
   result = fscanf(stream, FIXNUM_CONVERSION_SPEC, &in);
   if (!errno && (result == 1)) return make_fixnum(in);
-  return lerror("problem parsing integer - %d: %s\n", errno, strerror(errno));
+  return lerror("problem parsing integer - %d: %s", errno, strerror(errno));
 }
 
 lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
@@ -74,9 +78,9 @@ lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
   int c;
   while(1) {
     c = getc(stream);
-    if (c == EOF) return lerror("unexpected EOF\n");
+    if (c == EOF) return lerror("unexpected EOF");
     if (isspace(c)) continue;
-    if (c == stop) return pair_cdr(ret);
+    if (c == stop) return pair_cdr(LO_GET(lisp_pair, *ret));
     if (c == '.') {
       // this may seem weird but I think it's a reasonable way
       //  to catch the error while reading the list fully
@@ -85,19 +89,21 @@ lispobj* read_delimited_list(FILE *stream, lisp_package *p, char stop)
 	return lerror("Nothing follows . in list\n");
       if (head == ret) // catch (. whatever)
 	return lerror("Nothing appears before . in list\n");
-      set_pair_cdr(head, pair_car(rest));
-      if (!nullp(pair_cdr(rest)))
+      set_pair_cdr(LO_GET(lisp_pair, *head),
+		   pair_car(LO_GET(lisp_pair, *rest)));
+      if (!nullp(pair_cdr(LO_GET(lisp_pair, *rest))))
 	return lerror("More than one object follows . in list\n");
       else
-	return pair_cdr(ret);
+	return pair_cdr(LO_GET(lisp_pair, *ret));
     }
     ungetc(c, stream);
-    set_pair_cdr(head, make_pair(read_lisp(stream, p), nil));
-    head = pair_cdr(head);
+    set_pair_cdr(LO_GET(lisp_pair, *head),
+		 make_pair(read_lisp(stream, p), nil));
+    head = pair_cdr(LO_GET(lisp_pair, *head));
   }
 }
 
-inline int isterminating(char c) { return c == ')'; } /* wow */
+static inline int isterminating(char c) { return c == ')'; } /* wow */
 
 #define BUFFER_MAX 256
 /* originally i wrote something using heap allocation, but why bother

@@ -3,12 +3,13 @@
 
 #include <stdarg.h>
 #include "types.h"
+#include "fixnum.h"
 #include "package.h" // lisp_package*
+#include "singleton.h"
 
 #define UNUSED(x) ((void)x)
 
 /* LISP CONSTANTS C NEEDS */
-extern lispobj *nil, *inert, *ignore, *sharp_t, *sharp_f;
 extern lispobj *lstdin, *lstdout, *lstderr;
 extern lispobj *user_writes, *user_evals, *user_combines, *user_lookups, *user_defines;
 extern lispobj *empty_environment;
@@ -17,11 +18,11 @@ int truth(lispobj*);
 lispobj* untruth(int);
 
 lispobj* list(int, ...);
-lispobj* blank_list(fixnum);
+lispobj* map1(lispobj*(*)(lispobj*, void*), lispobj*, void*);
 
-inline int nullp(lispobj*);
-inline int ignorep(lispobj*);
-inline int undefinedp(lispobj*);
+int nullp(lispobj*);
+int ignorep(lispobj*);
+int undefinedp(lispobj*);
 
 fixnum list_length(lispobj*);
 
@@ -49,7 +50,7 @@ void populate_lookups(void);
 void populate_definers(void);
 void initialize_globals(void);
 
-#define DECLARE_FSUBR(NAME) lispobj* NAME##_fsubr(lispobj*,lispobj*);
+#define DECLARE_FSUBR(NAME) lispobj* NAME##_fsubr(lispobj*,lispobj*)
 
 DECLARE_FSUBR(car);
 DECLARE_FSUBR(cdr);

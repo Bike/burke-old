@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 /* this is for when i change types because i'm dumb */
-#define DECWRITE(NAME) void write_##NAME(lispobj*,lispobj*);
+#define DECWRITE(NAME) void write_##NAME(lispobj*,lispobj*)
 
 void write_lisp(lispobj*,lispobj*);
 DECWRITE(pair);

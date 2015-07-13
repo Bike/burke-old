@@ -3,12 +3,19 @@
 
 #include <stddef.h> // size_t
 #include "types.h"
-#include "layout_malloc.h" // ugh. for package def
 
-lispobj* intern(const char*, lisp_package*);
-lispobj* find_symbol(const char*, lisp_package*);
-lispobj* find_or_intern(const char*, lisp_package*);
+#define LT_PACKAGE 13
 
-lisp_package* make_package(size_t);
+typedef struct lisp_package {
+  size_t size;
+  size_t fill;
+  lispobj** symbols; // can't resize with a flexible w/o more indirect
+} lisp_package;
+
+lispobj* intern(char*, lisp_package*);
+lispobj* find_symbol(char*, lisp_package*);
+lispobj* find_or_intern(char*, lisp_package*);
+
+lispobj* make_package(size_t);
 
 #endif /* guard */
