@@ -1,0 +1,95 @@
+(defun parse (string)
+  (car (parse-seq string 0 (vlength string) #f)))
+
+(defun star? (thing) (and (cons? thing)
+			  (eql? (car thing) (quote *))))
+(defun bar? (thing) (and (cons? thing)
+			 (eql? (car thing) (quote \|))))
+(defun star (thing) (list (quote *) thing))
+(defun bar things (list* (quote \|) things))
+(defun bar-elements (thing) (cdr thing))
+(defun rstring things (list* (quote string) things))
+
+(defmacro loop body #ignore
+  (append (quote (tagbody loop-start))
+	  body
+	  (quote ((go loop-start) loop-finish))))
+
+(defmacro continue () #ignore
+  (quote (go loop-start)))
+
+(defmacro break () #ignore
+  (quote (go loop-finish)))
+
+(defun parse-one (string start end)
+  (let ((pos start)
+	(element #inert)
+	(return #inert))
+    (loop
+	 (when (=? pos end)
+	   (cond ((inert? element)
+		  (error "unexpected end of string"))
+		 (#t (set return (cons element pos))
+		     (break))))
+       (case (vref string pos)
+	 ((#\\)
+	  (cond ((inert? element)
+		 (set pos (1+ pos))
+		 (set element (vref string pos)))
+		(#t (set return (cons element pos)) (break))))
+	 ((#\*)
+	  (cond ((inert? element) (error "unexpected *"))
+		((star? element) #inert)
+		(#t (set element (star element)))))
+	 ((#\|)
+	  (cond ((inert? element) (error "unexpected |"))
+		(#t (let* ((r (parse-one string (1+ pos) end))
+			   (rec (car r))
+			   (new-pos (cdr r)))
+		      (set return
+			   (if (bar? rec)
+			       (cons
+				(apply bar
+				       (cons element
+					     (bar-elements rec)))
+				new-pos)
+			       (cons (bar element rec) new-pos)))
+		      (break)))))
+	 ((#\))
+	  (cond ((inert? element) (error "unexpected )"))
+		(#t (set return (cons element pos)) (break))))
+	 ((#\()
+	  (cond ((inert? element)
+		 (let* ((r (parse-seq string (1+ pos) end #t))
+			(rec (car r))
+			(new-pos (cdr r)))
+		   (set element rec)
+		   (set pos (1- new-pos))))
+		(#t (set return (cons element pos)) (break))))
+	 (#t (cond ((inert? element)
+		    (set element (vref string pos)))
+		   (#t (set return (cons element pos)) (break)))))
+       (set pos (1+ pos)))
+    return))
+
+(defun parse-seq (string start end recursive?)
+  (let ((elements ())
+	(return #inert)
+	(pos start))
+    (loop
+	 (when (=? pos end)
+	   (set return (cons (apply rstring (reverse elements)) pos))
+	   (break))
+       (when (eql? (vref string pos) #\))
+	 (cond (recursive?
+		(set return
+		     (cons (apply rstring (reverse elements))
+			   (1+ pos)))
+		(break))
+	       (#t (error ") in bad position"))))
+       (let* ((r (parse-one string pos end))
+	      (rec (car r))
+	      (new-pos (cdr r)))
+	 (set elements (cons rec elements))
+	 (set pos new-pos)))
+    return))
