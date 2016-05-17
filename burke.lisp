@@ -281,7 +281,14 @@
   (make-instance 'applicative :underlying op))
 
 (defmacro define-fsubr (name params eparam wrap &body body)
-  (let* ((fname (alexandria:symbolicate 'fsubr- name))
+  (let* ((params (if (symbolp params)
+		     ;; i'm not totally sure this is legal
+		     ;; (that (&rest x) binding 4 is legal, e.g.)
+		     ;; It does work on SBCL and CCL atm.
+		     `(&rest ,params)
+		     ;; dotted lists work in d-b, so
+		     params))
+	 (fname (alexandria:symbolicate 'fsubr- name))
 	 (combinand (gensym "COMBINAND"))
 	 (eparam (or eparam (gensym "ENV")))
 	 (value (if wrap
@@ -365,15 +372,12 @@
 	*inert*
 	(error "unable to set binding for ~a" name))))
 
-(defun eval-seq (forms env)
+(define-fsubr seq forms env nil
+  (assert (listp forms))
   (cond ((null forms) *inert*)
 	((null (rest forms)) (eval (first forms) env))
 	(t (eval (first forms) env)
-	   (eval-seq (rest forms) env))))
-
-(defun fsubr-seq (combinand env)
-  (eval-seq combinand env))
-(set-ground 'seq (fsubr #'fsubr-seq))
+	   (fsubr-seq (rest forms) env))))
 
 ;; this is what it takes to do it correctly, i think.
 ;; i have no particular reason to do so, but why the fuck not.
@@ -398,8 +402,7 @@
 	     (push `(go ,thing) (cdr (first blocks)))
 	     (push (list thing) blocks))
 	    (t (push thing (cdr (first blocks))))))))
-
-(defun fsubr-tagbody (combinand env)
+(define-fsubr tagbody combinand env nil
   (multiple-value-bind (start blocks) (parse-tagbody combinand)
     (let* ((tag (gensym "TAGBODY"))
 	   (env (make-instance 'tagbody-env
@@ -409,14 +412,13 @@
 	   (evaluating start))
       (loop
 	 (let* ((label (catch tag
-			 (return (eval-seq evaluating env))))
+			 (return (fsubr-seq evaluating env))))
 		(block (assoc label blocks)))
 	   (if block
 	       (setf evaluating (cdr block))
 	       (error "BURKE BUG: GO to nonexistent label ~a"
 		      label))))
       *inert*)))
-(set-ground 'tagbody (fsubr #'fsubr-tagbody))
 
 (defun find-tagbody-tag (env label)
   (cond ((eql env *empty-environment*) nil)
@@ -487,14 +489,12 @@
 
 (define-fsubr error (string) nil t (error string))
 
-(defun fsubr-make-environment (combinand env)
-  (declare (ignore env))
-  (make-instance 'hash-environment
-		 :add? t :mutate? t
-		 :binds (make-hash-table)
-		 :parents (copy-list combinand)))
-(set-ground 'make-environment
-	    (wrap (fsubr #'fsubr-make-environment)))
+(define-fsubr make-environment (parents add? mutate? . binds)
+    nil t
+  (make-instance 'hash-environment ; parameterize?
+		 :add? add? :mutate? mutate?
+		 :binds (alexandria:alist-hash-table binds)
+		 :parents (copy-list parents)))
 
 (define-fsubr make-macro (combiner) nil t
   (make-instance 'macro :combiner combiner))

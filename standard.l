@@ -4,10 +4,13 @@
 ;;; Stuff we need to make defining the rest of the
 ;;;  standard library tolerable
 
-(set-in get-current-environment (fexpr () e (make-environment) e)
-	((fexpr () e (make-environment) e)))
+(set-in empty-environment (make-environment () #f #f)
+	((fexpr () e (make-environment () #f #f) e)))
 
-(set-in list (wrap (fexpr x #ignore (make-environment) x))
+(set-in get-current-environment (fexpr () e empty-environment e)
+	((fexpr () e empty-environment e)))
+
+(set-in list (wrap (fexpr x #ignore empty-environment x))
 	(get-current-environment))
 
 (set-in macro
@@ -39,7 +42,7 @@
 	      ;; apply
 	      (cons arg
 		    (combine (unwrap list*)
-			     more-args (make-environment)))))))
+			     more-args empty-environment))))))
 
 (define defmacro
   (macro (name params eparam . body) #ignore
@@ -58,10 +61,10 @@
 ;; Good for optimization, and for avoiding one of the most quoted
 ;;  problems with fexprs.
 (defun call (app . args)
-  (combine (unwrap app) args (make-environment)))
+  (combine (unwrap app) args empty-environment))
 
 (defun apply (app args)
-  (combine (unwrap app) args (make-environment)))
+  (combine (unwrap app) args empty-environment))
 
 (defun map (function list)
   (if (null? list)
@@ -181,11 +184,11 @@
   ;;  then standard.
   ;; make-environment is to insert something to eat shadowings,
   ;;  since lambda environments don't allow shadowing bla bla bla.
-  (make-environment (get-current-environment)))
+  (make-environment (list (get-current-environment)) #t #t))
 
 (defun load-module (filename . depends)
-  (let ((module (apply make-environment
-		       (cons (make-standard-environment)
-			     depends))))
+  (let ((module (make-environment
+		 (cons (make-standard-environment)
+		       depends) #t #t)))
     (load filename module)
     module))
