@@ -317,8 +317,10 @@
     (loop (with-simple-restart (abort "Return to Burke REPL.")
 	    (fresh-line)
 	    (write-string "> ")
-	    (print
-	     (eval (burke-read) *repl-environment*))))))
+	    (let ((*package* (find-package "BURKE")))
+	      ;; (to avoid package prefixes when printing)
+	      (prin1
+	       (eval (burke-read) *repl-environment*)))))))
 
 (defun clear-to-ground ()
   (setf *repl-environment*
