@@ -19,8 +19,29 @@
 ;; combiners, booleans, environments are novel
 ;; NIL is an empty list, so uh, don't use it as a symbol
 
+;; named objects for debugging
+;; Definitely only for debugging. Unlike CL, there's no global
+;;  environment taking precedent over everything, so two Burke
+;;  objects might print the same by being named the same thing
+;;  in two different environments.
+;; Plus renaming/etc. objects is more common...
+(defclass named ()
+  ((name :initarg :name :accessor name))
+  (:documentation "Objects named by SET-IN. See that fsubr."))
+
+(declaim (inline nameable? named?))
+(defun nameable? (o) (typep o 'named))
+(defun named? (o)
+  (and (nameable? o)
+       (slot-boundp o 'name)))
+(defgeneric maybe-set-name (name object)
+  (:documentation "Set the name of object and subsidiaries, but only if they don't have names already.")
+  (:method (name object)
+    (when (and (nameable? object) (not (named? object)))
+      (setf (name object) name))))
+
 ;; eval
-(defclass combiner () ())
+(defclass combiner (named) ())
 (defclass fsubr (combiner)
   ((cl-function :initarg :fun :accessor fsubr-function)))
 (defclass subr (combiner)
@@ -33,6 +54,11 @@
 	       :accessor applicative-underlying)))
 (defclass macro (combiner)
   ((macro-combiner :initarg :combiner :accessor macro-combiner)))
+
+(defmethod maybe-set-name :before (name (object applicative))
+  (maybe-set-name name (applicative-underlying object)))
+(defmethod maybe-set-name :before (name (object macro))
+  (maybe-set-name name (macro-combiner object)))
 
 ;; singletons
 (defclass singleton ()
@@ -109,7 +135,11 @@
   (write-string (singleton-text object) stream))
 
 (defmethod print-object ((object combiner) stream)
-  (print-unreadable-object (object stream :type t :identity t)))
+  (if (named? object)
+      (print-unreadable-object (object stream :type t)
+	(write (name object) :stream stream))
+      (print-unreadable-object
+	  (object stream :type t :identity t))))
 
 (defmethod print-object ((object basic-environment) stream)
   (print-unreadable-object (object stream :type t :identity t)))
@@ -275,10 +305,15 @@
   (setf (gethash name (environment-bindings *ground-environment*))
 	value))
 
-(defun fsubr (fun)
-  (make-instance 'fsubr :fun fun))
+(defun fsubr (fun name)
+  (make-instance 'fsubr :fun fun :name name))
 (defun wrap (op)
-  (make-instance 'applicative :underlying op))
+  ;; note this is called by burke's wrap, not just us.
+  ;; hypothetically this name business could go in a
+  ;;  shared-initialize :after method for applicatives, etc.
+  (if (named? op)
+      (make-instance 'applicative :underlying op :name (name op))
+      (make-instance 'applicative :underlying op)))
 
 (defmacro define-fsubr (name params eparam wrap &body body)
   (let* ((params (if (symbolp params)
@@ -292,8 +327,8 @@
 	 (combinand (gensym "COMBINAND"))
 	 (eparam (or eparam (gensym "ENV")))
 	 (value (if wrap
-		    `(wrap (fsubr #',fname))
-		    `(fsubr #',fname))))
+		    `(wrap (fsubr #',fname ',name))
+		    `(fsubr #',fname ',name))))
     `(progn
        (defun ,fname (,combinand ,eparam)
 	 (declare (ignorable ,eparam))
@@ -368,6 +403,9 @@
 (define-fsubr set-in (name value in) env nil
   (let ((value (eval value env))
 	(in (eval in env)))
+    ;; set name of object for debugging
+    (maybe-set-name name value)
+    ;; actually set binding
     (if (nth-value 1 (setf (lookup in name) value))
 	*inert*
 	(error "unable to set binding for ~a" name))))
