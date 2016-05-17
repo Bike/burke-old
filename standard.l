@@ -98,9 +98,9 @@
       #f
       (list if (car forms)
 	    #t
-	    (cons or (cdr forms)))))
+	    (cons or? (cdr forms)))))
 
-(defun boolean? (object) (or (eql? object #t) (eql? object #f)))
+(defun boolean? (object) (or? (eql? object #t) (eql? object #f)))
 
 (defmacro when (condition . forms) #ignore
   (list if condition (cons seq forms) #inert))
@@ -121,7 +121,7 @@
 			 (cons
 			  (if (eql? (car case) #t)
 			      #t
-			      (cons or (map eqlfy (car case))))
+			      (cons or? (map eqlfy (car case))))
 			  (cdr case)))))
     (list let (list (list key keyform))
 	  (cons cond (map conditionify cases)))))
